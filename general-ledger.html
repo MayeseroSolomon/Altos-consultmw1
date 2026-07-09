@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>General Ledger</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+/* LAYOUT */
+body{
+  display:flex;
+  height:100vh;
+  background:#f4f6f9;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #1e2a38;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  background: transparent;
+  border: 1px solid #34495e;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 5px;
+}
+
+.sidebar button:hover {
+  background: #34495e;
+}
+
+.active{
+  background:#007bff !important;
+}
+
+.logo-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f4f6f9;
+  border-radius:15px;
+}
+
+.logo-wrapper img{
+  width: clamp(50px,15vw,100px);
+  max-width:150px;
+  min-width:80px;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+h2{
+  margin-bottom:20px;
+}
+
+/* FILTERS */
+.filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+
+input,select{
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:5px;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  background:#1f4e79;
+  color:white;
+  padding:10px;
+  text-align:left;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #eee;
+}
+
+.amount{
+  text-align:right;
+}
+
+.balance{
+  font-weight:bold;
+  color:#0d6efd;
+}
+
+tfoot td{
+  font-weight:bold;
+  background:#f8f9fa;
+}
+
+/* =========================
+   HAMBURGER (ADDED)
+========================= */
+.menuBtn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2000;
+  font-size: 24px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* =========================
+   MOBILE NAV (ADDED)
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    height: 100%;
+    transition: 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .menuBtn {
+    display: block;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<button class="menuBtn" onclick="toggleSidebar()" id="menuBtn">☰</button>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+  <div class="logo-wrapper">
+    <img src="pictures/silver strikers logo.png" alt="logo">
+  </div>
+
+  <br>
+  <h2>Accounting</h2>
+
+  <button onclick="go('dashboard.html')">Dashboard</button>
+  <button onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+  <button onclick="go('invoice-list.html')">Invoices</button>
+  <button onclick="go('customers.html')">Customers</button>
+  <button onclick="go('journallist.html')">Journals</button>
+  <button class="active" onclick="go('ledger.html')">General Ledger</button>
+  <button onclick="go('reports.html')">Reports</button>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="card">
+
+<h2>General Ledger</h2>
+
+<div class="filters">
+
+<input type="date" id="fromDate">
+<input type="date" id="toDate">
+
+<input type="text" id="journalFilter" placeholder="Journal No">
+<input type="text" id="accountFilter" placeholder="Account">
+<input type="text" id="referenceFilter" placeholder="Reference">
+
+<button id="clearBtn">Clear</button>
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+  <th>Date</th>
+  <th>Journal No</th>
+  <th>Reference</th>
+  <th>Account</th>
+  <th>Description</th>
+  <th>Debit</th>
+  <th>Credit</th>
+  <th>Balance</th>
+</tr>
+</thead>
+
+<tbody id="ledgerTable">
+<tr>
+<td colspan="8">Loading...</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+/* FIREBASE */
+const app = initializeApp({
+  apiKey:"AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain:"makwacha-accounting-app.firebaseapp.com",
+  projectId:"makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+/* NAV */
+window.go = (p)=>location.href=p;
+
+/* STATE */
+let ledger = [];
+let viewMode = "normal";
+
+/* LOAD LEDGER */
+async function loadLedger(){
+
+  ledger = [];
+
+  const [journalSnap, journalSnapAlt] = await Promise.all([
+    getDocs(collection(db,"journal")),
+    getDocs(collection(db,"journals"))
+  ]);
+
+  const process = (snap) => {
+
+    snap.forEach(docSnap => {
+
+      const j = docSnap.data();
+
+      if (j.status && j.status !== "Posted") return;
+
+      (j.lines || []).forEach(line => {
+
+        ledger.push({
+          journalId: docSnap.id,
+          date: j.date || j.invoiceDate || "",
+          journalNo: j.journalNo || j.invoiceNo || "",
+          reference: j.reference || j.invoiceNo || "",
+
+          /* 🔥 FIXED FIELDS */
+          accountName: line.accountName || line.account || "Unknown",
+          accountCode: line.accountCode || "",
+
+          description: line.description || j.description || "",
+          debit: Number(line.debit) || 0,
+          credit: Number(line.credit) || 0
+        });
+
+      });
+
+    });
+
+  };
+
+  process(journalSnap);
+  process(journalSnapAlt);
+
+  applyFilters();
+}
+
+/* FILTERS */
+function applyFilters(){
+
+  let rows = [...ledger];
+
+  const from = fromDate.value;
+  const to = toDate.value;
+  const acc = accountFilter.value.toLowerCase();
+  const ref = referenceFilter.value.toLowerCase();
+  const jnl = journalFilter.value.trim().toLowerCase();
+
+  rows = rows.filter(r=>{
+
+    if(from && r.date < from) return false;
+    if(to && r.date > to) return false;
+
+    if(jnl && !(r.journalNo||"").toLowerCase().includes(jnl)) return false;
+    if(acc && !r.accountName.toLowerCase().includes(acc)) return false;
+    if(ref && !r.reference.toLowerCase().includes(ref)) return false;
+
+    return true;
+  });
+
+  rows.sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+  if (viewMode === "grouped") {
+    renderGroupedLedger(rows);
+  } else {
+    render(rows);
+  }
+}
+
+/* NORMAL LEDGER */
+function render(data){
+
+  const tbody = document.getElementById("ledgerTable");
+  tbody.innerHTML = "";
+
+  let balance = 0;
+  let debitTotal = 0;
+  let creditTotal = 0;
+
+  data.forEach(r=>{
+
+    balance += r.debit;
+    balance -= r.credit;
+
+    debitTotal += r.debit;
+    creditTotal += r.credit;
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${r.date}</td>
+      <td style="color:#1f4e79;font-weight:bold;cursor:pointer">
+        ${r.journalNo}
+      </td>
+      <td>${r.reference}</td>
+      <td>${r.accountCode ? r.accountCode + " - " : ""}${r.accountName}</td>
+      <td>${r.description}</td>
+      <td class="amount">${r.debit.toLocaleString()}</td>
+      <td class="amount">${r.credit.toLocaleString()}</td>
+      <td class="amount balance">${balance.toLocaleString()}</td>
+    `;
+
+    tr.children[1].onclick = () => {
+      window.location.href = `journalview.html?id=${r.journalId}`;
+    };
+
+    tbody.appendChild(tr);
+  });
+
+  const diff = debitTotal - creditTotal;
+
+  const totalRow = document.createElement("tr");
+  totalRow.style.fontWeight = "bold";
+  totalRow.style.background = "#f8f9fa";
+
+  totalRow.innerHTML = `
+    <td colspan="5">TOTAL</td>
+    <td class="amount">${debitTotal.toLocaleString()}</td>
+    <td class="amount">${creditTotal.toLocaleString()}</td>
+    <td class="amount">${diff===0 ? "0.00 (Balanced)" : diff.toLocaleString()}</td>
+  `;
+
+  tbody.appendChild(totalRow);
+}
+
+/* GROUPED LEDGER */
+function renderGroupedLedger(data){
+
+  const tbody = document.getElementById("ledgerTable");
+  tbody.innerHTML = "";
+
+  const groups = {};
+
+  data.forEach(r => {
+
+    const key =
+  (r.accountCode ? r.accountCode + " - " : "") +
+  (r.accountName || "Unknown");
+  
+    if (!groups[key]) {
+      groups[key] = {
+        debit: 0,
+        credit: 0,
+        lines: []
+      };
+    }
+
+    groups[key].debit += r.debit;
+    groups[key].credit += r.credit;
+    groups[key].lines.push(r);
+  });
+
+  Object.keys(groups).forEach(account => {
+
+    const g = groups[account];
+
+    const header = document.createElement("tr");
+    header.style.background = "#001F54";
+    header.style.color = "white";
+    header.innerHTML = `
+      <td colspan="8" style="font-weight:bold;">
+        ${account}
+      </td>
+    `;
+    tbody.appendChild(header);
+
+    let balance = 0;
+
+    g.lines.forEach(r => {
+
+      balance += r.debit - r.credit;
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${r.date}</td>
+        <td>${r.journalNo}</td>
+        <td>${r.reference}</td>
+        <td>${r.accountCode ? r.accountCode + " - " : ""}${r.accountName}</td>
+        <td>${r.description}</td>
+        <td class="amount">${r.debit.toLocaleString()}</td>
+        <td class="amount">${r.credit.toLocaleString()}</td>
+        <td class="amount">${balance.toLocaleString()}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    const totalRow = document.createElement("tr");
+    totalRow.style.fontWeight = "bold";
+    totalRow.style.background = "#f8f9fa";
+
+    totalRow.innerHTML = `
+      <td colspan="5">${account} TOTAL</td>
+      <td class="amount">${g.debit.toLocaleString()}</td>
+      <td class="amount">${g.credit.toLocaleString()}</td>
+      <td class="amount">${(g.debit - g.credit).toLocaleString()}</td>
+    `;
+
+    tbody.appendChild(totalRow);
+
+  });
+}
+
+/* EVENTS */
+fromDate.onchange = applyFilters;
+toDate.onchange = applyFilters;
+accountFilter.oninput = applyFilters;
+referenceFilter.oninput = applyFilters;
+journalFilter.oninput = applyFilters;
+
+clearBtn.onclick = () => {
+  fromDate.value = "";
+  toDate.value = "";
+  accountFilter.value = "";
+  referenceFilter.value = "";
+  journalFilter.value = "";
+  applyFilters();
+};
+
+/* ✅ ADDED: MOBILE TOGGLE */
+window.toggleSidebar = function () {
+  const sidebar = document.querySelector(".sidebar");
+  const btn = document.getElementById("menuBtn");
+
+  sidebar.classList.toggle("show");
+
+  btn.textContent = sidebar.classList.contains("show") ? "✖" : "☰";
+};
+
+/* auto close on click */
+document.querySelectorAll(".sidebar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.remove("show");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
+
+
+loadLedger();
+
+</script>
+</body>
+</html>

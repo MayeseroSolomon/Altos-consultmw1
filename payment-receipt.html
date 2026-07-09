@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Payment Receipt</title>
+
+<style>
+
+body{
+  background:#f4f6f9;
+  font-family:Arial,sans-serif;
+  padding:30px;
+}
+
+.receipt{
+  max-width:800px;
+  margin:auto;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 5px 20px rgba(0,0,0,0.15);
+}
+
+.header{
+  background:#001F54;
+  color:white;
+  padding:25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:24px;
+  font-weight:bold;
+}
+
+.title{
+  text-align:right;
+}
+
+.title h1{
+  margin:0;
+  font-size:28px;
+}
+
+.content{
+  padding:30px;
+}
+
+.info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-bottom:25px;
+}
+
+.box{
+  background:#f8f9fa;
+  padding:15px;
+  border-radius:8px;
+}
+
+.label{
+  color:#666;
+  font-size:13px;
+}
+
+.value{
+  font-size:16px;
+  font-weight:bold;
+  margin-top:5px;
+}
+
+.amount-box{
+  background:#28a745;
+  color:white;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+  margin-top:20px;
+}
+
+.amount-box h2{
+  margin:0;
+  font-size:34px;
+}
+
+.footer{
+  margin-top:40px;
+  border-top:1px solid #ddd;
+  padding-top:20px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.print-btn{
+  margin-top:20px;
+  background:#001F54;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+@media print {
+
+  @page{
+    size:auto;
+    margin:10mm;
+  }
+
+  html,body{
+    background:white !important;
+    margin:0;
+    padding:0;
+  }
+
+  *{
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    forced-color-adjust: none !important;
+  }
+
+  .print-btn{
+    display:none !important;
+  }
+
+  .receipt{
+    box-shadow:none !important;
+    border:2px solid #001F54 !important;
+    background:white !important;
+  }
+
+  .header{
+    background:#001F54 !important;
+    color:#ffffff !important;
+  }
+
+  .header *{
+    color:#ffffff !important;
+  }
+
+  #receiptNo{
+    background:#28a745 !important;
+    color:#ffffff !important;
+    padding:6px 12px;
+    border-radius:4px;
+    display:inline-block;
+  }
+
+  .box{
+    background:#f8f9fa !important;
+    border:1px solid #dddddd !important;
+  }
+
+  .label{
+    color:#666666 !important;
+  }
+
+  .value{
+    color:#000000 !important;
+  }
+
+  .amount-box{
+    background:#28a745 !important;
+    color:#ffffff !important;
+    border:3px solid #1e7e34 !important;
+    padding:20px !important;
+    border-radius:10px !important;
+    text-align:center !important;
+  }
+
+  .amount-box h2{
+    color:#ffffff !important;
+    font-size:34px !important;
+    font-weight:bold !important;
+  }
+
+  .amount-box div{
+    color:#ffffff !important;
+    font-weight:bold !important;
+  }
+
+  .footer{
+    border-top:1px solid #dddddd !important;
+    color:#000000 !important;
+  }
+
+}
+</style>
+</head>
+<body>
+
+<div class="receipt">
+
+  <div class="header">
+    <div class="logo">
+      ALTOS CONSULT
+    </div>
+
+    <div class="title">
+      <h1>PAYMENT RECEIPT</h1>
+      <div id="receiptNo">RCT-00001</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="info-grid">
+
+      <div class="box">
+        <div class="label">Invoice Number</div>
+        <div class="value" id="invoiceNo"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Customer</div>
+        <div class="value" id="customer"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Payment Date</div>
+        <div class="value" id="paymentDate"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Payment Method</div>
+        <div class="value" id="method"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Reference</div>
+        <div class="value" id="reference"></div>
+      </div>
+
+    </div>
+
+    <div class="amount-box">
+      <div>Amount Received</div>
+      <h2 id="amount"></h2>
+    </div>
+
+    <div class="footer">
+      <div>
+        Thank you for your payment.
+      </div>
+
+      <div>
+        Authorized Receipt
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">
+      Print Receipt
+    </button>
+
+  </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+
+const receiptNo = params.get("receiptNo");
+const invoiceNo = params.get("invoiceNo");
+
+/* =========================
+   LOAD RECEIPT FROM FIRESTORE
+========================= */
+async function loadReceipt() {
+
+  const snap = await getDocs(collection(db, "invoices"));
+
+  let payment = null;
+  let invoice = null;
+
+  snap.forEach(doc => {
+    const data = doc.data();
+
+    if (data.invoiceNo === invoiceNo) {
+      invoice = data;
+
+      (data.payments || []).forEach(p => {
+        if (p.receiptNo === receiptNo) {
+          payment = p;
+        }
+      });
+    }
+  });
+
+  if (!payment || !invoice) {
+    alert("Receipt not found");
+    return;
+  }
+
+  /* =========================
+     FILL UI
+  ========================= */
+
+  document.getElementById("invoiceNo").innerText = invoice.invoiceNo || "";
+  document.getElementById("customer").innerText =
+    invoice.customerName || invoice.customer || "";
+
+  document.getElementById("paymentDate").innerText =
+    payment.paymentDate || "";
+
+  document.getElementById("method").innerText =
+    payment.method || "";
+
+  document.getElementById("reference").innerText =
+    payment.reference || "";
+
+  document.getElementById("amount").innerText =
+    "MWK " + Number(payment.amount || 0).toLocaleString();
+
+  document.getElementById("receiptNo").innerText =
+    payment.receiptNo || "RCT-PENDING";
+}
+
+loadReceipt();
+
+</script>
+
+</body>
+</html>

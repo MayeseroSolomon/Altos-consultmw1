@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add User - Makwacha</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  padding: 30px;
+}
+
+.container {
+  max-width: 450px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 15px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1b5fbf;
+}
+
+.msg {
+  text-align: center;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Create User</h2>
+
+  <form id="userForm">
+
+    <input type="text" id="fullname" placeholder="Full Name" required>
+
+    <input type="text" id="username" placeholder="Username (for login)" required>
+
+    <input type="email" id="email" placeholder="Email" required>
+
+    <input type="password" id="password" placeholder="Password" required>
+
+    <select id="role">
+      <option value="Administrator">Administrator</option>
+      <option value="Accountant">Accountant</option>
+      <option value="Sales">Sales</option>
+      <option value="Cashier">Cashier</option>
+      <option value="Auditor">Auditor</option>
+    </select>
+
+    <select id="status">
+      <option value="Active">Active</option>
+      <option value="Disabled">Disabled</option>
+    </select>
+
+    <button type="submit">Create User</button>
+  </form>
+
+  <p class="msg" id="msg"></p>
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+
+import {
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+  doc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const form = document.getElementById("userForm");
+const msg = document.getElementById("msg");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const fullname = document.getElementById("fullname").value;
+  const username = document.getElementById("username").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const role = document.getElementById("role").value;
+  const status = document.getElementById("status").value;
+
+  msg.textContent = "";
+
+  try {
+    // 1. Create Auth user
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    const user = userCredential.user;
+
+    // 2. Save in Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      fullname,
+      username,
+      email,
+      role,
+      status,
+      createdAt: new Date().toISOString()
+    });
+
+    msg.style.color = "green";
+    msg.textContent = "User created successfully!";
+
+    form.reset();
+
+  } catch (err) {
+    msg.style.color = "red";
+    msg.textContent = err.message;
+  }
+});
+</script>
+
+</body>
+</html>

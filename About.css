@@ -1,0 +1,380 @@
+/* ==========================================================================
+   1. GLOBAL & BASE STYLES
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+    background: #f4f4f4;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    /* Cross-browser scrollbar hiding */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Chrome, Safari, and Opera scrollbar hiding */
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    height: 0 !important;
+}
+/* HERO BUTTONS */
+
+.topbuttons{
+    display:flex;
+    justify-content:center;
+    gap:60px;
+    flex-wrap:wrap;
+}
+
+.service-explore,
+.bookconsultation{
+    padding:14px 28px;
+    border-radius:30px;
+    text-decoration:none;
+    font-size:16px;
+    font-weight:bold;
+    transition:0.3s ease;
+}
+.gold-box{
+    background: transparent;
+    border: 2px solid #ffd700;
+    padding-left: 5%;
+    parring-right: 5%;
+    align-self: center;
+    align-items: center;
+    height: auto;
+    padding-top: 5%;
+    padding-bottom: 5%;
+}
+
+/* GOLD BUTTON */
+
+.service-explore{
+    background:#ffd700;
+    color:#0b1f3a;
+}
+
+.service-explore:hover{
+    background:white;
+}
+
+/* OUTLINE BUTTON */
+
+.bookconsultation{
+    border:2px solid #ffd700;
+    color:#ffd700;
+    background:rgba(0,0,0,0.3);
+}
+
+.bookconsultation:hover{
+    background:#ffd700;
+    color:#0b1f3a;
+}
+.service-explore::after {
+  content: "→";               /* Unicode arrow character */
+  margin-left: 8px;            /* Space between text and arrow */
+  transition: margin-left 0.3s ease;
+}
+.bookconsultation::after {
+  content: "→";               /* Unicode arrow character */
+  margin-left: 8px;            /* Space between text and arrow */
+  transition: margin-left 0.3s ease;
+}
+.book{
+    display: flex;
+}
+.explore{
+    display: flex;
+}
+.book h4{
+    color: white;
+    margin-right: 10px;
+    padding-top: 15px;
+    font-size: 16px;
+}
+.explore h4{
+    color: white;
+    margin-right: 10px;
+    padding-top: 15px;
+    font-size: 16px;
+}
+/* ==========================================================================
+   4. CONTENT AND LAYOUT STYLES
+   ========================================================================== */
+.content-wrapper {
+    margin-top: 85px; /* Pushes content down below fixed navbar */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    flex: 1; /* Pushes footer down on short pages */
+}
+
+/* ===================================================
+   SERVICES SECTION
+=================================================== */
+
+.services{
+    padding:80px 10%;
+    background:linear-gradient(to right, #0f172a, #1e3a8a);
+}
+
+.services-title{
+    text-align:center;
+    margin-bottom:60px;
+    color:white;
+}
+
+.services-title h2{
+    font-size:42px;
+    margin-bottom:15px;
+}
+
+.services-title p{
+    color:#ffd700;
+    font-size:18px;
+}
+
+/* SERVICES GRID */
+
+.services-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+    gap:30px;
+}
+
+/* SERVICE CARD */
+
+.service-box{
+    background:#fff;
+    padding:35px 25px;
+    border-radius:18px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    transition:all .4s ease;
+}
+
+.service-box:hover{
+    transform:translateY(-10px);
+    box-shadow:0 20px 40px rgba(0,0,0,0.15);
+}
+/* SERVICE ICON */
+
+.service-imagewrapper{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:20px;
+    border-radius: 25px;
+    stroke: white;
+    stroke-width: 5px;
+}
+
+.service-icon{
+    width:80px;
+    height:80px;
+    object-fit:contain;
+}
+
+/* SERVICE TEXT */
+
+.service-box h3{
+    color:#0b1f3a;
+    margin-bottom:15px;
+    font-size:24px;
+}
+
+.service-line{
+    width:70px;
+    height:3px;
+    background:#ffd700;
+    margin:0 auto 20px;
+    border-radius:10px;
+}
+
+.service-box p{
+    color:#4b5563;
+    line-height:1.8;
+    margin-bottom:25px;
+    font-size:15px;
+}
+
+/* SERVICE BUTTON */
+
+.service-link{
+    display:inline-block;
+    padding:10px 22px;
+    background:#0b1f3a;
+    color:white;
+    text-decoration:none;
+    border-radius:30px;
+    transition:0.3s ease;
+    font-weight:bold;
+}
+
+.service-link:hover{
+    background:#ffd700;
+    color:#0b1f3a;
+}
+/* ===================================================
+   MISSION / VISION / VALUES
+=================================================== */
+
+.mission-section,
+.vision-section,
+.values-section{
+    width:85%;
+    margin:60px auto;
+    background:white;
+    padding:50px;
+    border-radius:20px;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+.values-section:hover {
+      transform:translateY(-10px);
+    box-shadow:0 15px 35px rgba(0,0,0,0.2);
+    background-color: gray;
+    color: white;
+}
+.mission-section:hover {
+      transform:translateY(-10px);
+    box-shadow:0 15px 35px rgba(0,0,0,0.2);
+    background-color: gray;
+    color: white;
+}
+.vision-section:hover {
+      transform:translateY(-10px);
+    box-shadow:0 15px 35px rgba(0,0,0,0.2);
+    background-color: gray;
+    color: white;
+}
+.mission-photo,
+.vision-photo,
+.value-photo{
+    width:120px;
+    height:120px;
+    object-fit:contain;
+    margin-bottom:25px;
+}
+
+.mission-section h2,
+.vision-section h2,
+.values-section h2{
+    color:#0b1f3a;
+    margin-bottom:15px;
+}
+
+.gold-line{
+    width:80px;
+    height:3px;
+    background:#ffd700;
+    margin:0 auto 25px;
+    border-radius:10px;
+}
+
+.mission-section p,
+.vision-section p{
+    color:#4b5563;
+    line-height:1.9;
+    font-size:16px;
+}
+
+/* VALUES */
+
+.values-list{
+    list-style:none;
+}
+
+.values-list li{
+    margin-bottom:15px;
+    font-size:18px;
+    color:#0b1f3a;
+    font-weight:bold;
+}
+
+
+.our-team{
+    text-align:center;
+    padding:80px 10%;
+    background: linear-gradient(135deg, #f8fbff, #e6f0ff);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border-radius: 18px;
+}
+.team-container{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+.our-team h2{
+    font-size:42px;
+    margin-bottom:15px;
+    color:#0b1f3a;
+    display: flex;
+    justify-content: center;
+}
+
+.ceo-profile-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;    
+    max-width: 400px;       
+    margin: 40px auto;      
+    padding: 30px;
+    background-color: #0b1f3a; 
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5); 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ceo-image-wrapper {
+    margin-bottom: 20px; 
+    display: flex;
+    justify-content: center;
+}
+
+.ceo-photo {
+    width: 150px;         
+    height: 150px;        
+    border-radius: 50%;   
+    object-fit: cover;    
+    border: 4px solid #ffd700; 
+}
+
+.ceo-history {
+    text-align: center;   
+    color: white;
+    font-size: 10px;
+}
+
+.ceo-history h2 {
+    margin: 0 0 5px 0;
+    font-size: 28px;
+    color: #ffd700; /* Adjusted for readability on dark background */
+}
+
+.ceo-history h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    color: #b0bec5; /* Adjusted for readability on dark background */         
+}
+
+.ceo-history p {
+    line-height: 1.6;     
+    font-size: 16px;
+}
+
+.ceo-profile-box:hover {
+    box-shadow: 0 12px 36px rgba(0,0,0,0.7); 
+    background-color: #122b4f; /* Smoother color shift than harsh #333 */
+    transform: translateY(-2px);
+}

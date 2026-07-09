@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALTOS CONSULT: CONTACT</title>
+    <link rel="stylesheet" href="contact.css">
+    <link rel="icon" href="pictures/reviews-bg.png" type="image/png">
+    <link rel="stylesheet" href="footer.css">
+    <link rel="stylesheet" href="navbar.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo-section">
+        <img src="pictures/reviews-bg.png" alt="Company Logo" class="logo"> 
+        <h2 class="company-name">ALTOS <span>CONSULT</span></h2>
+    </div> 
+    <button class="menu-toggle" id="mobile-menu-btn">☰</button>
+  
+    <!-- FIXED: Added id="nav-links-container" right here -->
+    <ul class="nav-links" id="nav-links-container">
+        <li><a href="index.html">HOME</a></li>
+        <li><a href="about.html">ABOUT</a></li>
+        <li class="dropdown-menu">
+            <a href="services.html" class="dropbtn">SERVICES</a>
+            <ul class="dropdown">
+                <li><a href="bookkeeping.html">Bookkeeping and Financial Reporting</a></li>
+                <li><a href="tax.html">Tax Compliance</a></li>
+                <li><a href="auditandassurance.html">Audit and Assurance</a></li>
+                <li><a href="businessconsult.html">Business Consulting</a></li>
+            </ul>
+        </li>
+        <li><a href="contact.html" class="active">CONTACT</a></li>
+        <li><a href="blog.html">BLOG</a></li>
+    </ul>
+</nav>
+<br><br><br>
+<main class="content-wrapper">
+    <section class="contact-header">
+
+    <div class="getintouch">
+        <h1>Get in Touch with Altos Consult</h1>
+        <p>We are here to assist you with all your accounting and consulting needs.</p>
+
+        <button class="contact-btn open-contact-modal">
+            Schedule your consultation
+        </button>
+    </div>
+    </section>
+   <section class="contact-info">
+
+    <div class="contactinfo-title">
+        <h2>Contact Information</h2>
+    </div>
+
+    <div class="contactinfo-container">
+
+        <div class="info-box">
+            <img src="pictures/phone-call.png" class="contact-icon" alt="Phone">
+            <p>0994031697</p>
+            <p>0880314701</p>
+        </div>
+
+        <div class="info-box">
+            <img src="pictures/placeholder.png" class="contact-icon" alt="Location">
+            <p>Masauko Chipembere Highway</p>
+            <p>Cashbuild 2nd floor</p>
+            <p>PO Box 1416</p>
+            <p>Limbe</p>
+        </div>
+
+        <div class="info-box">
+            <img src="pictures/email.png" class="contact-icon" alt="Email">
+            <p>
+                <strong>Email</strong><br>
+                <a href="mailto:solomongreymayesero@gmail.com">
+                    solomongreymayesero@gmail.com
+                </a>
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+   <button class="contact-btn open-contact-modal">
+    Schedule your consultation
+</button>
+<section class="map-section">
+
+    <div class="map-title">
+    <h2>Visit Our Office</h2>
+    <p>Find us at Cashbuild, 2nd Floor, Masauko Chipembere Highway, Limbe.</p>
+</div>
+
+<div class="map-container">
+    <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3838.986216561167!2d35.054396774162086!3d-15.804680784837112!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x18d84f47ae082281%3A0x86352b449580e2ef!2sCashbuild%20Blantyre!5e0!3m2!1sen!2smw!4v1780769364208!5m2!1sen!2smw"
+        width="600"
+        height="450"
+        style="border:0;"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+</div>
+
+</section>
+    </main>
+   <footer class="footer">
+    <section class="footercontent-section">
+   <div class="quicklinks">
+    <h3>Quick Links</h3>
+   <a href="index.html"> Home </a><br><br> 
+   <a href="about.html"> About </a> <br> <br>
+   <a href="services.html"> Services </a> <br> <br>
+   <a href="contact.html"> Contact </a><br><br>
+   <a href="Blog.html">Blog</a><br>
+   </div>
+    <div class="contacts">
+       <h3>Contact Us</h3>
+        <p><a href="mailto:solomongreymayesero@gmail.com">Email: info@altosconsult.com<br></a>
+        Phone: +265880314701</p>
+    </div>
+    <div class="social-media">
+       <h3> follow us</h3><br>
+        <a href="https://web.facebook.com/profile.php?id=61551922085267"><img src="pictures/facebook (1).png" alt="Facebook" class="social-icon"></a><br>
+        <a href="#"><img src="pictures/tiktok.png" alt="Twitter" class="social-icon"></a><br>
+    </div></section><br>
+    <p class="rights">&copy; 2026 Altos Consult. All rights reserved.</p>
+</footer>
+<div class="modal-overlay" id="contactModal">
+
+    <div class="modal-content">
+
+        <span class="close-modal" id="closeContactModal">&times;</span>
+
+        <h2>Contact Altos Consult</h2>
+
+        <form class="contact-form" action="https://formspree.io/f/mrevedzy" method="POST" id="contact-form">
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" name="company">
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone">
+            </div>
+
+            <div class="form-group">
+                <label>Services Required</label>
+
+                <div class="services-checklist">
+
+                    <label><input type="checkbox" name="services[]" value="Bookkeeping"> Bookkeeping</label>
+
+                    <label><input type="checkbox" name="services[]" value="Tax Compliance"> Tax Compliance</label>
+
+                    <label><input type="checkbox" name="services[]" value="Payroll Management"> Payroll Management</label>
+
+                    <label><input type="checkbox" name="services[]" value="Audit & Assurance"> Audit & Assurance</label>
+
+                    <label><input type="checkbox" name="services[]" value="Business Consulting"> Business Consulting</label>
+
+                    <label><input type="checkbox" name="services[]" value="VAT Compliance"> VAT Compliance</label>
+                    </div><div class="form-group">
+                    <label><input type="date" name="starting-time[]" value="Preferred Starting Time"> Preferred starting day</label>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Message</label>
+                <textarea name="message" rows="5" required></textarea>
+            </div>
+             <div class="form-buttons">
+        <button type="reset" class="clear-btn">Clear</button>
+    </div>
+
+            <button type="submit" class="submit-btn">
+                Send Inquiry
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const menuBtn = document.getElementById("mobile-menu-btn");
+    const navMenu = document.getElementById("nav-links-container");
+
+    menuBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+
+        navMenu.classList.toggle("mobile-open");
+
+        // ✅ CHANGE ICON HERE
+        if (navMenu.classList.contains("mobile-open")) {
+            menuBtn.textContent = "✕";
+        } else {
+            menuBtn.textContent = "☰";
+        }
+    });
+
+    // close when clicking outside
+    document.addEventListener("click", function (e) {
+        if (!navMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+            navMenu.classList.remove("mobile-open");
+            menuBtn.textContent = "☰"; // reset icon
+        }
+    });
+
+    // close when clicking a link
+    navMenu.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", () => {
+            navMenu.classList.remove("mobile-open");
+            menuBtn.textContent = "☰"; // reset icon
+        });
+    });
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const modal = document.getElementById("contactModal");
+    const openBtns = document.querySelectorAll(".open-contact-modal");
+    const closeBtn = document.getElementById("closeContactModal");
+
+    // OPEN modal (all buttons)
+    openBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            modal.classList.add("show");
+        });
+    });
+
+    // CLOSE modal (X button)
+    closeBtn.addEventListener("click", () => {
+        modal.classList.remove("show");
+    });
+
+    // CLOSE when clicking outside modal content
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.classList.remove("show");
+        }
+    });
+
+});
+</script>
+</body>
+</html>

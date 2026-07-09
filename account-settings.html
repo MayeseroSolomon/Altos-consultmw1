@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Account Mapping Settings</title>
+
+<style>
+body {
+  font-family: Arial;
+  background:#f4f6f9;
+  display:flex;
+  justify-content:center;
+  padding:20px;
+}
+
+.container {
+  width:700px;
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 { text-align:center; }
+
+label {
+  font-size:13px;
+  margin-top:10px;
+  display:block;
+}
+
+select {
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+}
+
+button {
+  margin-top:15px;
+  padding:10px;
+  width:100%;
+  background:#001F54;
+  color:white;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.success {
+  margin-top:10px;
+  color:green;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Account Mapping Settings</h2>
+
+<label>Sales Account</label>
+<select id="salesAccount"></select>
+
+<label>VAT / Tax Account</label>
+<select id="vatAccount"></select>
+
+<label>Accounts Receivable</label>
+<select id="receivablesAccount"></select>
+
+<label>Cash Account</label>
+<select id="cashAccount"></select>
+
+<label>Bank Account</label>
+<select id="bankAccount"></select>
+
+<button onclick="saveSettings()">Save Settings</button>
+
+<div class="success" id="msg"></div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+const app = initializeApp({
+  apiKey:"AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain:"makwacha-accounting-app.firebaseapp.com",
+  projectId:"makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+/* LOAD ACCOUNTS */
+async function loadAccounts() {
+
+  const snap = await getDocs(collection(db,"chartOfAccounts"));
+
+  const accounts = [];
+
+  snap.forEach(d => {
+    const a = d.data();
+    accounts.push(`${a.code} - ${a.name}`);
+  });
+
+  const selects = [
+    "salesAccount",
+    "vatAccount",
+    "receivablesAccount",
+    "cashAccount",
+    "bankAccount"
+  ];
+
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+
+    sel.innerHTML = `<option value="">Select Account</option>`;
+
+    accounts.forEach(acc => {
+      sel.innerHTML += `<option value="${acc}">${acc}</option>`;
+    });
+  });
+
+}
+
+/* LOAD SAVED SETTINGS */
+async function loadSettings() {
+
+  const ref = doc(db,"settings","accountMapping");
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+
+  Object.keys(data).forEach(key => {
+    const el = document.getElementById(key);
+    if (el) el.value = data[key];
+  });
+
+}
+
+/* SAVE SETTINGS */
+window.saveSettings = async function() {
+
+  const data = {
+    salesAccount: salesAccount.value,
+    vatAccount: vatAccount.value,
+    receivablesAccount: receivablesAccount.value,
+    cashAccount: cashAccount.value,
+    bankAccount: bankAccount.value
+  };
+
+  await setDoc(doc(db,"settings","accountMapping"), data);
+
+  msg.innerText = "Settings saved successfully!";
+};
+
+loadAccounts();
+loadSettings();
+
+</script>
+
+</body>
+</html>

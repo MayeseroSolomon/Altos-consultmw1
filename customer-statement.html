@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Customer Statement</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+select, button {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #001F54;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #001F54;
+  color: white;
+}
+
+.credit { color: green; }
+.debit { color: red; }
+.balance { font-weight: bold; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Customer Statement</h2>
+
+<div class="header">
+  <select id="customerSelect">
+    <option value="">Loading customers...</option>
+  </select>
+
+  <button onclick="window.print()">Print</button>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Date</th>
+  <th>Reference</th>
+  <th>Description</th>
+  <th>Debit</th>
+  <th>Credit</th>
+  <th>Balance</th>
+</tr>
+</thead>
+
+<tbody id="statementBody">
+<tr><td colspan="6">Select a customer</td></tr>
+</tbody>
+
+</table>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+/* FIREBASE */
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+/* URL PARAM */
+const params = new URLSearchParams(window.location.search);
+const preselectedCustomer = (params.get("customer") || "").trim();
+
+/* STATE */
+let allInvoices = [];
+
+const customerSelect = document.getElementById("customerSelect");
+const table = document.getElementById("statementBody");
+
+/* LOAD DATA */
+async function loadData() {
+
+  const snap = await getDocs(collection(db, "invoices"));
+
+  allInvoices = snap.docs.map(d => ({
+    id: d.id,
+    ...d.data()
+  }));
+
+  loadCustomers();
+
+  // 🔥 IMPORTANT FIX: wait for dropdown THEN set value THEN trigger
+  if (preselectedCustomer) {
+
+    setTimeout(() => {
+      customerSelect.value = preselectedCustomer;
+
+      // trigger statement build
+      customerSelect.dispatchEvent(new Event("change"));
+    }, 100);
+  }
+}
+
+/* LOAD CUSTOMERS */
+function loadCustomers() {
+
+  const customers = new Set();
+
+  allInvoices.forEach(inv => {
+
+    const name =
+      inv.customer ||
+      inv.customerName ||
+      inv.customerCode ||
+      "";
+
+    if (name) customers.add(name.trim());
+  });
+
+  customerSelect.innerHTML = `<option value="">Select Customer</option>`;
+
+  [...customers]
+    .sort((a, b) => a.localeCompare(b))
+    .forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      customerSelect.appendChild(opt);
+    });
+}
+
+/* STATEMENT BUILD */
+customerSelect.addEventListener("change", () => {
+
+  const customer = customerSelect.value;
+
+  if (!customer) {
+    table.innerHTML = `<tr><td colspan="6">Select a customer</td></tr>`;
+    return;
+  }
+
+  let rows = [];
+
+  allInvoices.forEach(inv => {
+
+    const invCustomer =
+      inv.customer ||
+      inv.customerName ||
+      inv.customerCode ||
+      "";
+
+    if (invCustomer !== customer) return;
+
+    const total = Number(inv.total || inv.amount || 0);
+    const date = inv.invoiceDate || inv.createdAt;
+
+    rows.push({
+      date,
+      ref: inv.invoiceNo,
+      desc: "Invoice",
+      debit: total,
+      credit: 0
+    });
+
+    (inv.payments || []).forEach(p => {
+      rows.push({
+        date: p.paymentDate,
+        ref: p.receiptNo,
+        desc: "Payment",
+        debit: 0,
+        credit: Number(p.amount || 0)
+      });
+    });
+  });
+
+  rows.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  let balance = 0;
+  table.innerHTML = "";
+
+  if (!rows.length) {
+    table.innerHTML = `<tr><td colspan="6">No transactions found</td></tr>`;
+    return;
+  }
+
+  rows.forEach(r => {
+
+    balance += (r.debit - r.credit);
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${r.date ? new Date(r.date).toLocaleDateString() : ""}</td>
+      <td>${r.ref || ""}</td>
+      <td>${r.desc}</td>
+      <td class="debit">${r.debit ? "MWK " + r.debit.toLocaleString() : ""}</td>
+      <td class="credit">${r.credit ? "MWK " + r.credit.toLocaleString() : ""}</td>
+      <td class="balance">MWK ${balance.toLocaleString()}</td>
+    `;
+
+    table.appendChild(tr);
+  });
+});
+
+/* START */
+loadData();
+
+</script>
+</body>
+</html>

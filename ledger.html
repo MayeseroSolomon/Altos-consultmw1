@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Account Ledger</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  padding: 20px;
+}
+
+.box {
+  max-width: 1100px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+h2 {
+  margin-bottom: 10px;
+  color: #001F54;
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: gray;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #001F54;
+  color: white;
+  padding: 10px;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.debit { color: #dc3545; font-weight: bold; }
+.credit { color: #28a745; font-weight: bold; }
+
+.balance {
+  font-weight: bold;
+  color: #001F54;
+}
+
+/* BUTTONS */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.back-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.print-btn {
+  background: #001F54;
+  color: white;
+}
+
+/* PRINT */
+@media print {
+  .actions { display: none !important; }
+
+  thead {
+    background: #001F54 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  th {
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body { background: white !important; }
+
+  .box { box-shadow: none !important; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<!-- ACTION BUTTONS -->
+<div class="actions">
+  <button class="btn back-btn" onclick="goBack()">⬅ Back</button>
+  <button class="btn print-btn" onclick="window.print()">🖨 Print</button>
+</div>
+
+<h2 id="title">Account Ledger</h2>
+
+<div class="info">
+  <div><b>Code:</b> <span id="code"></span></div>
+  <div><b>Type:</b> <span id="type"></span></div>
+  <div><b>Category:</b> <span id="category"></span></div>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Date</th>
+  <th>Ref</th>
+  <th>Description</th>
+  <th>Debit</th>
+  <th>Credit</th>
+  <th>Balance</th>
+</tr>
+</thead>
+
+<tbody id="ledgerBody"></tbody>
+</table>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+/* BACK BUTTON */
+window.goBack = function () {
+  window.location.href = "chart-of-accounts.html";
+};
+
+/* GET URL PARAM */
+const accountCode = new URLSearchParams(window.location.search).get("code");
+
+let account = null;
+
+/* LOAD ACCOUNT */
+async function loadAccount() {
+  const snap = await getDocs(collection(db, "chartOfAccounts"));
+
+  snap.forEach(d => {
+    const a = d.data();
+    if (a.code === accountCode) account = a;
+  });
+
+  if (!account) {
+    alert("Account not found: " + accountCode);
+    return;
+  }
+
+  document.getElementById("title").innerText = account.name;
+  document.getElementById("code").innerText = account.code;
+  document.getElementById("type").innerText = account.type;
+  document.getElementById("category").innerText = account.category;
+}
+
+/* LOAD LEDGER */
+/* LOAD LEDGER */
+async function loadLedger() {
+
+  let lines = [];
+
+  // LOAD FROM journals
+  try {
+    const journalsSnap = await getDocs(collection(db, "journals"));
+
+    journalsSnap.forEach(d => {
+      const j = d.data();
+
+      (j.lines || []).forEach(l => {
+
+        const match =
+          l.accountCode === account.code ||
+          l.accountName === account.name ||
+          l.account === account.name ||
+          l.account === `${account.code} - ${account.name}` ||
+          (l.account || "").includes(account.name) ||
+          (l.account || "").includes(account.code);
+
+        if (match) {
+          lines.push({
+            date: j.date,
+            desc: j.description,
+            ref: j.reference || j.receiptNo || "",
+            debit: Number(l.debit || 0),
+            credit: Number(l.credit || 0)
+          });
+        }
+      });
+    });
+
+  } catch(err){
+    console.log(err);
+  }
+
+  // LOAD FROM journal (invoice journals)
+  try {
+    const journalSnap = await getDocs(collection(db, "journal"));
+
+    journalSnap.forEach(d => {
+      const j = d.data();
+
+      (j.lines || []).forEach(l => {
+
+        const match =
+          l.accountCode === account.code ||
+          l.accountName === account.name ||
+          l.account === account.name ||
+          l.account === `${account.code} - ${account.name}` ||
+          (l.account || "").includes(account.name) ||
+          (l.account || "").includes(account.code);
+
+        if (match) {
+          lines.push({
+            date: j.date,
+            desc: j.description,
+            ref: j.reference || "",
+            debit: Number(l.debit || 0),
+            credit: Number(l.credit || 0)
+          });
+        }
+      });
+    });
+
+  } catch(err){
+    console.log(err);
+  }
+
+  lines.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  let balance = 0;
+  const tbody = document.getElementById("ledgerBody");
+  tbody.innerHTML = "";
+
+  if (lines.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">No transactions found for this account</td>
+      </tr>
+    `;
+    return;
+  }
+
+  lines.forEach(l => {
+
+    balance += (l.debit - l.credit);
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${l.date || ""}</td>
+        <td>${l.ref || ""}</td>
+        <td>${l.desc || ""}</td>
+        <td class="debit">${l.debit.toLocaleString()}</td>
+        <td class="credit">${l.credit.toLocaleString()}</td>
+        <td class="balance">${balance.toLocaleString()}</td>
+      </tr>
+    `;
+  });
+}
+/* INIT */
+async function init() {
+  await loadAccount();
+  await loadLedger();
+}
+
+init();
+
+/* NEW: Load invoices from Firestore (non-intrusive addition)
+   This does not modify existing UI unless an element with id="invoicesBody"
+   or "invoiceSelect" is present. It stores results in window.invoices for later use. */
+async function loadInvoices() {
+  try {
+    const snap = await getDocs(collection(db, "invoices"));
+    const invoices = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    window.invoices = invoices;
+
+    // Optional rendering if you have a table body with id="invoicesBody"
+    const tbl = document.getElementById("invoicesBody");
+    if (tbl) {
+      tbl.innerHTML = invoices.length
+        ? invoices.map(inv => {
+            const no = inv.invoiceNo || inv.number || "";
+            const date = inv.date || "";
+            const total = (Number(inv.total) || 0).toLocaleString();
+            return `<tr><td>${no}</td><td>${date}</td><td>${total}</td></tr>`;
+          }).join("")
+        : `<tr><td colspan="3">No invoices</td></tr>`;
+    }
+  } catch (err) {
+    console.error("LOAD INVOICES ERROR:", err);
+  }
+}
+
+/* Ensure invoices are loaded after the page has initialized
+   without altering the existing init() flow. */
+window.addEventListener("load", () => {
+  if (typeof loadInvoices === "function") {
+    loadInvoices();
+  }
+});
+
+</script>
+
+</body>
+</html>

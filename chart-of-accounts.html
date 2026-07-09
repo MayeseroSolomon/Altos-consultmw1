@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Makwacha - Chart of Accounts</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial;
+}
+
+/* LAYOUT */
+body {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+}
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #1e2a38;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  background: transparent;
+  border: 1px solid #34495e;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 5px;
+}
+
+.sidebar button:hover {
+  background: #34495e;
+}
+.active{
+  background: #007bff !important;
+}
+.logo-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f6f9;
+  border-radius: 15px;
+}
+.logo-wrapper img{
+  width: clamp(50px,15vw,100px);
+  max-width: 150px;
+  min-width: 80px;
+  height: auto;
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 20px;
+  overflow:auto;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+h2{color:#2c3e50;}
+
+.add-btn{
+  background:#2ecc71;
+  color:#fff;
+  border:none;
+  padding:10px 15px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* FILTERS */
+.filters{
+  display:grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.filters input,
+.filters select{
+  padding:8px;
+  border:1px solid #ddd;
+  border-radius:6px;
+  font-size:12px;
+}
+
+.clear-btn{
+  grid-column: span 3;
+  background:#e74c3c;
+  color:#fff;
+  border:none;
+  padding:9px;
+  border-radius:6px;
+  width: 20%;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+}
+
+th,td{
+  padding:12px;
+  border-bottom:1px solid #eee;
+}
+
+thead{
+  background:#2c3e50;
+  color:white;
+}
+
+.inactive{opacity:0.5;}
+
+.btn{
+  padding:5px 8px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.edit{background:#3498db;color:#fff;}
+.delete{background:#e74c3c;color:#fff;}
+.inactivate{background:#f39c12;color:#fff;}
+
+/* MODAL */
+.modal{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content{
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  width:420px;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border:1px solid #ddd;
+  border-radius:6px;
+}
+
+.form-actions{
+  display:flex;
+  gap:10px;
+}
+
+.save{flex:1;background:#2ecc71;color:#fff;border:none;padding:10px;border-radius:6px;}
+.new{flex:1;background:#3498db;color:#fff;border:none;padding:10px;border-radius:6px;}
+.close{width:100%;background:#e74c3c;color:#fff;border:none;padding:10px;border-radius:6px;margin-top:8px;}
+
+/* =========================
+   HAMBURGER (ADDED)
+========================= */
+.menuBtn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2000;
+  font-size: 24px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+/* =========================
+   MOBILE NAV (ADDED)
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    height: 100%;
+    transition: 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .menuBtn {
+    display: block;
+  }
+}
+
+</style>
+</head>
+
+<body>
+  <button class="menuBtn" onclick="toggleSidebar()" id="menuBtn">☰</button>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo-wrapper">
+  <img src="pictures/silver strikers logo.png" alt="company-logo"></div><br>
+  <h2>Accounting</h2>
+
+  <button onclick="go('dashboard.html')">Dashboard</button>
+  <button class="active" onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+  <button onclick="go('invoice-list.html')">Invoices</button>
+  <button onclick="go('customers.html')">Customers</button>
+  <button onclick="go('journallist.html')">Journals</button>
+  <button onclick="go('journal-ledger.html')">Ledger</button>
+  <button onclick="go('reports.html')">Reports</button>
+  <button onclick="go('account-settings.html')">Settings</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header">
+  <h2>Chart of Accounts</h2>
+  <button class="add-btn" onclick="openModal()">➕ Add Account</button>
+</div>
+
+<div class="filters">
+  <input id="search" placeholder="Search">
+
+  <select id="typeFilter">
+    <option value="">Type</option>
+    <option>Asset</option>
+    <option>Liability</option>
+    <option>Equity</option>
+    <option>Income</option>
+    <option>Expense</option>
+  </select>
+
+  <select id="categoryFilter">
+    <option value="">Category</option>
+  </select>
+
+  <button class="clear-btn" onclick="clearFilters()">Clear Filters</button>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Code</th><th>Name</th><th>Type</th><th>Category</th><th>Balance</th><th>Status</th><th>Actions</th>
+</tr>
+</thead>
+<tbody id="coaTable"></tbody>
+</table>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+<div class="modal-content">
+
+<input id="name" placeholder="Account Name">
+
+<select id="type">
+  <option value="">Type</option>
+  <option>Asset</option>
+  <option>Liability</option>
+  <option>Equity</option>
+  <option>Income</option>
+  <option>Expense</option>
+</select>
+
+<select id="category"></select>
+
+<input id="code" placeholder="Code">
+<input id="balance" type="number" value="0">
+<textarea id="description"></textarea>
+
+<div class="form-actions">
+  <button class="save" onclick="saveAccount()">Save</button>
+  <button class="new" onclick="saveAndNew()">Save & New</button>
+</div>
+
+<button class="close" onclick="closeModal()">Close</button>
+
+</div>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let all = [];
+let editId = null;
+
+/* NAV */
+window.go = (p)=>location.href=p;
+
+/* MODAL */
+window.openModal = ()=>modal.style.display="flex";
+window.closeModal = ()=>modal.style.display="none";
+
+/* CATEGORY MAP */
+const map = {
+  Asset:["Cash","Bank","Receivables"],
+  Liability:["Payables","Loans"],
+  Equity:["Capital"],
+  Income:["Sales"],
+  Expense:["Expenses"]
+};
+
+/* ELEMENTS (SAFE ACCESS - THIS FIXES SAVE BUTTON) */
+const el = (id)=>document.getElementById(id);
+
+/* CATEGORY LOAD */
+function loadCat(type){
+  const cat = el("category");
+  cat.innerHTML = `<option value="">Category</option>`;
+  if(map[type]){
+    map[type].forEach(c=>{
+      cat.innerHTML += `<option>${c}</option>`;
+    });
+  }
+}
+
+el("type").addEventListener("change",(e)=>{
+  loadCat(e.target.value);
+});
+
+/* FILTER CATEGORY */
+function loadFilterCat(type){
+  const cat = el("categoryFilter");
+  cat.innerHTML = `<option value="">Category</option>`;
+  if(map[type]){
+    map[type].forEach(c=>{
+      cat.innerHTML += `<option>${c}</option>`;
+    });
+  }
+}
+
+/* LOAD DATA */
+async function load(){
+  const snap = await getDocs(collection(db,"chartOfAccounts"));
+  all = snap.docs.map(d=>({id:d.id,...d.data()}));
+  render(all);
+}
+
+/* RENDER */
+function render(data){
+  el("coaTable").innerHTML = "";
+
+  data.forEach(a=>{
+    el("coaTable").innerHTML += `
+<tr class="${a.status==='inactive'?'inactive':''}" onclick="openLedger('${a.code}')">
+      <td>${a.code}</td>
+      <td>${a.name}</td>
+      <td>${a.type}</td>
+      <td>${a.category}</td>
+      <td>${a.balance}</td>
+      <td>${a.status}</td>
+      <td>
+       <button class="btn edit" onclick="event.stopPropagation(); editAcc('${a.id}')">Edit</button>
+        <button class="btn delete" onclick="event.stopPropagation(); del('${a.id}')">Del</button>
+        <button class="btn inactivate" onclick="event.stopPropagation(); tog('${a.id}','${a.status}')">
+          ${a.status==='active'?'Inactivate':'Activate'}
+        </button>
+      </td>
+    </tr>`;
+  });
+}
+
+/* FILTERS */
+function apply(){
+  const s = el("search").value.toLowerCase();
+  const t = el("typeFilter").value;
+  const c = el("categoryFilter").value;
+
+  const f = all.filter(a =>
+    (!s || a.name.toLowerCase().includes(s) || a.code.includes(s)) &&
+    (!t || a.type===t) &&
+    (!c || a.category===c)
+  );
+
+  render(f);
+}
+
+async function accountHasTransactions(accountCode){
+
+  // Check Journals
+  const journalSnap = await getDocs(collection(db,"journals"));
+
+  for(const docSnap of journalSnap.docs){
+    const j = docSnap.data();
+
+    if(j.lines){
+      const found = j.lines.some(line =>
+        line.accountCode === accountCode ||
+        line.code === accountCode
+      );
+
+      if(found) return true;
+    }
+  }
+
+  // Check Invoices
+  const invoiceSnap = await getDocs(collection(db,"invoices"));
+
+  for(const docSnap of invoiceSnap.docs){
+    const inv = docSnap.data();
+
+    if(inv.accountCode === accountCode) return true;
+
+    if(inv.lines){
+      const found = inv.lines.some(line =>
+        line.accountCode === accountCode ||
+        line.code === accountCode
+      );
+
+      if(found) return true;
+    }
+  }
+
+  return false;
+}
+
+el("search").addEventListener("input",apply);
+
+el("typeFilter").addEventListener("change",(e)=>{
+  loadFilterCat(e.target.value);
+  el("categoryFilter").value="";
+  apply();
+});
+
+el("categoryFilter").addEventListener("change",apply);
+
+/* CLEAR */
+window.clearFilters = ()=>{
+  el("search").value="";
+  el("typeFilter").value="";
+  el("categoryFilter").value="";
+  loadFilterCat("");
+  apply();
+};
+
+/* ✅ SAVE FIX (THIS IS THE IMPORTANT PART) */
+window.saveAccount = async ()=>{
+
+  const name = el("name").value;
+  const type = el("type").value;
+  const category = el("category").value;
+  const code = el("code").value;
+  const balance = Number(el("balance").value || 0);
+
+  if(!name || !type || !category || !code){
+    alert("All fields required");
+    return;
+  }
+
+  // ✅ UNIQUE CODE CHECK (ONLY ON CREATE OR DIFFERENT RECORD)
+  const existingWithSameCode = all.find(a => a.code === code);
+
+  if(existingWithSameCode && existingWithSameCode.id !== editId){
+    alert("❌ Account code already exists. Please use a different code.");
+    return;
+  }
+
+  const data = {
+    name, type, category, code, balance,
+    status:"active"
+  };
+
+  if(editId){
+
+  const original = all.find(a => a.id === editId);
+
+  const hasTransactions = await accountHasTransactions(original.code);
+
+  const accountChanged =
+      original.code !== code ||
+      original.name !== name ||
+      original.type !== type ||
+      original.category !== category;
+
+  if(hasTransactions && accountChanged){
+    alert("❌ Cannot edit this account because transactions already exist.");
+    return;
+  }
+
+  await updateDoc(doc(db,"chartOfAccounts",editId),data);
+  editId = null;
+
+} else {
+
+  await addDoc(collection(db,"chartOfAccounts"),data);
+
+}
+
+
+  closeModal();
+  load();
+};
+
+/* SAVE & NEW */
+window.saveAndNew = async ()=>{
+
+  await saveAccount(); // keeps your UNIQUE CODE logic
+
+  // ensure we exit edit mode safely
+  editId = null;
+
+  // clear form
+  el("name").value = "";
+  el("code").value = "";
+  el("balance").value = 0;
+  el("type").value = "";
+  el("category").value = "";
+
+  // reset category dropdown
+  document.getElementById("category").innerHTML = `<option value="">Category</option>`;
+};
+/* 🔥 MAKE ACTION BUTTONS WORK IN MODULE SCOPE */
+window.editAcc = function(id){
+  const a = all.find(x => x.id === id);
+  editId = id;
+
+  el("name").value = a.name;
+  el("type").value = a.type;
+
+  loadCat(a.type);
+
+  el("category").value = a.category;
+  el("code").value = a.code;
+  el("balance").value = a.balance;
+
+  openModal();
+};
+
+window.del = async function(id){
+
+  const acc = all.find(a => a.id === id);
+
+  if(!acc) return;
+
+  const hasTransactions = await accountHasTransactions(acc.code);
+
+  if(hasTransactions){
+    alert("❌ Cannot delete account. Transactions exist for this account.");
+    return;
+  }
+
+  if(!confirm(`Delete ${acc.name}?`)) return;
+
+  await deleteDoc(doc(db,"chartOfAccounts",id));
+
+  load();
+};
+
+window.tog = async function(id, status){
+  await updateDoc(doc(db,"chartOfAccounts",id), {
+    status: status === "active" ? "inactive" : "active"
+  });
+  load();
+};
+
+/* ✅ ADDED: MOBILE TOGGLE */
+window.toggleSidebar = function () {
+  const sidebar = document.querySelector(".sidebar");
+  const btn = document.getElementById("menuBtn");
+
+  sidebar.classList.toggle("show");
+
+  btn.textContent = sidebar.classList.contains("show") ? "✖" : "☰";
+};
+
+/* auto close on click */
+document.querySelectorAll(".sidebar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.remove("show");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
+
+
+window.openLedger = function(code){
+  window.location.href = `ledger.html?code=${encodeURIComponent(code)}`;
+};
+
+/* INIT */
+load();
+</script>
+</body>
+</html>

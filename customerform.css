@@ -1,0 +1,42 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.body{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5%;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.customeraddform{
+justify-content: center;
+align-content: center;
+padding: 5%;
+}
+.form-container{
+    justify-content: center;
+    padding: 20px;
+    font-size: 22px;
+    background-color: antiquewhite;
+    width: 100%;
+}
+.formheader{
+background-color: rgba(11, 11, 54, 0.929);
+width: 100%;
+border-radius: 0px 0px 10px 10px;
+display: flex;
+}
+.formdetails{
+    background-color: beige;
+}
+.calendar{
+    color: white;
+    background-color: transparent;
+    justify-self: right;
+    font-size: 16px;
+    font-weight: 300;
+
+}

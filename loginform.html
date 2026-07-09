@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Login</title>
+
+<link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+
+<div class="login-container">
+    <img src="pictures/logo.png" alt="logo" class="logo1">
+
+    <h2>Customer Login</h2>
+    <p>Track your ordered vehicles</p>
+
+    <form onsubmit="loginUser(event)">
+
+        <input type="text" id="username" placeholder="Username or Email" required>
+
+        <input type="password" id="password" placeholder="Password" required>
+
+        <button type="submit">Login</button>
+
+    </form>
+
+    <p class="note">Don’t have an account? click <a href="userform.html">here</a> to sign-up.</p>
+
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+
+import {
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+window.loginUser = async function(event) {
+    event.preventDefault();
+
+    const input = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    try {
+
+        let email = input;
+
+        // STEP 1: Check if user typed username instead of email
+        if (!input.includes("@")) {
+
+            const q = query(
+                collection(db, "users"),
+                where("username", "==", input)
+            );
+
+            const snap = await getDocs(q);
+
+            if (snap.empty) {
+                alert("User not found");
+                return;
+            }
+
+            email = snap.docs[0].data().email;
+        }
+
+        // STEP 2: Login with Firebase Auth
+        await signInWithEmailAndPassword(auth, email, password);
+
+        // STEP 3: Redirect
+        window.location.href = "dashboard.html";
+
+    } catch (err) {
+        alert("Login failed: " + err.message);
+    }
+};
+</script>
+
+</body>
+</html>

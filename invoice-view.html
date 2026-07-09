@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice</title>
+
+<style>
+body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 20px; }
+
+.invoice-box {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:2px solid #28a745;
+  padding-bottom:15px;
+  margin-bottom:20px;
+}
+
+.logo img { max-height:80px; }
+
+.company h2 { margin:0; color:#001F54; }
+.company p { margin:2px 0; color:gray; font-size:13px; }
+
+.info {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th, td {
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+}
+
+th { background:#001F54; color:#fff; }
+
+.totals {
+  width:100%;
+  margin-top:10px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.totals table {
+  width:360px;
+  border-collapse:collapse;
+}
+
+.totals td { padding:8px; }
+
+.print-btn {
+  margin-top:20px;
+  padding:10px 15px;
+  background:#001F54;
+  color:white;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.right { text-align:right; }
+.small { font-size:12px; color:gray; }
+</style>
+</head>
+
+<body>
+
+<div class="invoice-box">
+
+  <div class="header">
+    <div class="logo">
+      <img src="pictures/silver strikers logo.png">
+    </div>
+
+    <!-- CANCELLED STAMP -->
+<div id="cancelStamp" style="
+  display:none;
+  position:absolute;
+  top:140px;
+  right:40px;
+  font-size:60px;
+  color:red;
+  font-weight:bold;
+  transform:rotate(-20deg);
+  opacity:0.4;
+  border:5px solid red;
+  padding:10px;
+  border-radius:10px;
+">
+  CANCELLED
+</div>
+
+    <div class="company">
+      <h2>Altos Consult</h2>
+      <p>Post Office Box 1416</p>
+      <p>Lilongwe</p>
+    </div>
+  </div>
+
+  <div class="info">
+    <div>
+      <strong>Invoice No:</strong> <span id="invoiceNo"></span><br>
+      <strong>Date:</strong> <span id="invoiceDate"></span><br>
+      <strong>Due:</strong> <span id="dueDate"></span>
+    </div>
+
+    <div>
+      <strong>Customer:</strong> <span id="customer"></span><br>
+      <strong>Status:</strong> <span id="status"></span>
+    </div>
+  </div>
+
+  <table id="itemsTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Description</th>
+        <th class="right">Qty</th>
+        <th class="right">Price</th>
+        <th class="right">Total</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="totals">
+    <table>
+      <tr><td>Subtotal</td><td class="right" id="subtotal">0</td></tr>
+      <tr><td>Grand</td><td class="right" id="grand">0</td></tr>
+      <tr><td>Paid</td><td class="right" id="paidAmount">0</td></tr>
+      <tr><td>Due</td><td class="right" id="dueAmount">0</td></tr>
+    </table>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">Print</button>
+  <button id="payBtn" class="print-btn" style="background:#28a745; display:none;">
+    Add Payment
+  </button>
+
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" style="
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+">
+
+  <div style="background:white;padding:20px;border-radius:10px;width:320px;">
+    <h3>Record Payment</h3>
+
+    <label>Amount</label>
+    <input type="number" id="payAmount" style="width:100%;padding:8px;">
+
+    <label>Payment Date</label>
+    <input type="date" id="payDate" style="width:100%;padding:8px;">
+
+    <label>Reference</label>
+    <input type="text" id="payReference" style="width:100%;padding:8px;">
+
+    <label>Payment Method</label>
+    <select id="payMethod" style="width:100%;padding:8px;"></select>
+
+    <button onclick="savePayment()" style="margin-top:10px;width:100%;background:#28a745;color:white;padding:10px;border:none;">
+      Save Payment
+    </button>
+
+    <button onclick="closePayment()" style="margin-top:5px;width:100%;background:#dc3545;color:white;padding:10px;border:none;">
+      Cancel
+    </button>
+  </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  updateDoc,
+  arrayUnion,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+/* =========================
+   FIREBASE INIT
+========================= */
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+/* =========================
+   STATE
+========================= */
+const invoiceNoParam =
+  new URLSearchParams(window.location.search).get("invoiceNo");
+
+let currentInvoice = null;
+let currentGrand = 0;
+let currentPaid = 0;
+let isCancelled = false;
+
+let accountMapping = {};
+
+/* =========================
+   RECEIPT NO
+========================= */
+function generateReceiptNo() {
+  const key = "receipt_counter";
+  let n = Number(localStorage.getItem(key) || 0) + 1;
+  localStorage.setItem(key, n);
+  return "RCT-" + String(n).padStart(5, "0");
+}
+
+/* =========================
+   LOAD SETTINGS
+========================= */
+async function loadMapping() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "accountMapping"));
+    if (snap.exists()) {
+      accountMapping = snap.data();
+    }
+  } catch (err) {
+    console.warn("Mapping not found");
+  }
+}
+
+/* =========================
+   LOAD ACCOUNTS (CASH/BANK)
+========================= */
+async function loadAccounts() {
+  const snap = await getDocs(collection(db, "chartOfAccounts"));
+  const sel = document.getElementById("payMethod");
+
+  sel.innerHTML = `<option value="">Select Payment Method</option>`;
+
+  snap.forEach(d => {
+    const acc = d.data();
+
+    const isCashOrBank =
+      acc.category === "Cash" ||
+      acc.category === "Bank";
+
+    if (acc.status === "active" && isCashOrBank) {
+      sel.innerHTML += `
+        <option value="${d.id}">
+          ${acc.code} - ${acc.name}
+        </option>`;
+    }
+  });
+}
+
+/* =========================
+   OPEN PAYMENT
+========================= */
+window.openPayment = function(no, grand, paid) {
+
+  if (isCancelled) return alert("Invoice is cancelled");
+
+  currentInvoice = no;
+  currentGrand = grand;
+  currentPaid = paid;
+
+  document.getElementById("payAmount").value =
+    (grand - paid).toFixed(2);
+
+  document.getElementById("payDate").value =
+    new Date().toISOString().split("T")[0];
+
+  document.getElementById("paymentModal").style.display = "flex";
+};
+
+window.closePayment = function () {
+  document.getElementById("paymentModal").style.display = "none";
+};
+
+/* =========================
+   SAVE PAYMENT (FINAL FIX)
+========================= */
+window.savePayment = async function () {
+
+  try {
+
+    const amount = Number(document.getElementById("payAmount").value);
+    const accountId = document.getElementById("payMethod").value;
+    const paymentDate = document.getElementById("payDate").value;
+    const reference = document.getElementById("payReference").value;
+
+    if (!amount || amount <= 0) return alert("Invalid amount");
+    if (!accountId) return alert("Select payment method");
+
+    /* GET ACCOUNT */
+    const accSnap = await getDoc(doc(db, "chartOfAccounts", accountId));
+
+    if (!accSnap.exists()) return alert("Account not found");
+
+    const acc = accSnap.data();
+
+    /* MATCH YOUR SETTINGS FORMAT */
+    const methodLabel = `${acc.code} - ${acc.name}`;
+
+    const [methodCode, methodName] = methodLabel.split(" - ");
+
+    /* FIND INVOICE */
+    const invSnap = await getDocs(collection(db, "invoices"));
+
+    let id = null;
+
+    invSnap.forEach(d => {
+      if (d.data().invoiceNo === currentInvoice) {
+        id = d.id;
+      }
+    });
+
+    if (!id) return alert("Invoice not found");
+
+    const receiptNo = generateReceiptNo();
+
+    /* UPDATE INVOICE */
+    await updateDoc(doc(db, "invoices", id), {
+      payments: arrayUnion({
+        amount,
+        method: methodLabel,
+        paymentDate,
+        reference,
+        receiptNo,
+        dateRecorded: new Date()
+      }),
+      status: (currentPaid + amount >= currentGrand)
+        ? "Paid"
+        : "Partial"
+    });
+
+    /* JOURNAL ENTRY */
+    await addDoc(collection(db, "journal"), {
+      date: paymentDate,
+      reference: reference || currentInvoice,
+      journalNo: "PAY-" + currentInvoice,
+
+      lines: [
+        {
+          account: methodName,
+          accountCode: methodCode,
+          description: "Invoice payment received",
+          debit: amount,
+          credit: 0
+        },
+        {
+          account: accountMapping.receivablesAccount,
+          accountCode: accountMapping.receivablesAccount?.split(" - ")[0] || "",
+          description: "Reduce accounts receivable",
+          debit: 0,
+          credit: amount
+        }
+      ],
+
+      status: "Posted",
+      source: "invoice-payment"
+    });
+
+    alert("Payment saved successfully");
+    location.reload();
+
+  } catch (err) {
+    console.error(err);
+    alert("Payment failed. Check console.");
+  }
+};
+
+/* =========================
+   LOAD INVOICE
+========================= */
+async function loadInvoice() {
+
+  const snap = await getDocs(collection(db, "invoices"));
+  let found = null;
+
+  snap.forEach(d => {
+    if (d.data().invoiceNo === invoiceNoParam) {
+      found = d.data();
+    }
+  });
+
+  if (!found) return alert("Invoice not found");
+
+  isCancelled = found.status === "Cancelled";
+
+  document.getElementById("invoiceNo").innerText = found.invoiceNo || "";
+  document.getElementById("customer").innerText =
+    found.customerName || found.customer || "";
+  document.getElementById("status").innerText =
+    found.status || "Unpaid";
+
+  const tbody = document.querySelector("#itemsTable tbody");
+  tbody.innerHTML = "";
+
+  let subtotal = 0;
+
+  (found.items || []).forEach((i, idx) => {
+    const line = Number(i.qty || 0) * Number(i.price || 0);
+    subtotal += line;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${i.desc}</td>
+        <td class="right">${i.qty}</td>
+        <td class="right">${i.price}</td>
+        <td class="right">${line}</td>
+      </tr>
+    `;
+  });
+
+  const grand = found.total || subtotal;
+
+  const paid = Array.isArray(found.payments)
+    ? found.payments.reduce((s, p) => s + Number(p.amount || 0), 0)
+    : (found.paid || 0);
+
+  document.getElementById("subtotal").innerText = subtotal.toFixed(2);
+  document.getElementById("grand").innerText = grand.toFixed(2);
+  document.getElementById("paidAmount").innerText = paid.toFixed(2);
+  document.getElementById("dueAmount").innerText =
+    (grand - paid).toFixed(2);
+
+  currentGrand = grand;
+  currentPaid = paid;
+
+  const payBtn = document.getElementById("payBtn");
+
+  if (!isCancelled && paid < grand) {
+    payBtn.style.display = "block";
+    payBtn.onclick = () =>
+      openPayment(found.invoiceNo, grand, paid);
+  } else {
+    payBtn.style.display = "none";
+  }
+}
+
+/* =========================
+   INIT
+========================= */
+(async function init() {
+  await loadMapping();
+  await loadAccounts();
+  await loadInvoice();
+})();
+
+</script>
+</body>
+</html>

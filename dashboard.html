@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accounting Dashboard</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial;
+}
+
+/* LAYOUT */
+body {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #1e2a38;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  background: transparent;
+  border: 1px solid #34495e;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 5px;
+}
+
+.sidebar button:hover {
+  background: #34495e;
+}
+
+/* MAIN AREA */
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.number {
+  font-size: 24px;
+  font-weight: bold;
+  color: #27ae60;
+  margin-top: 10px;
+}
+
+.label {
+  color: gray;
+}
+
+/* HEADER */
+.header {
+  margin-bottom: 20px;
+}
+.logo-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f6f9;
+  border-radius: 15px;
+}
+.logo-wrapper img{
+  width: clamp(50px,15vw,100px);
+  max-width: 150px;
+  min-width: 80px;
+  height: auto;
+}
+.active{
+  background: #007bff !important;
+}
+/* =========================
+   HAMBURGER
+========================= */
+.menuBtn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2000;
+
+  font-size: 24px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  /* Sidebar becomes hidden by default */
+  .sidebar {
+    position: fixed;
+    left: -240px;
+    top: 0;
+    height: 100%;
+    transition: 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  /* Show hamburger */
+  .menuBtn {
+    display: block;
+  }
+
+  /* MAIN spacing fix */
+  .main {
+    padding-top: 60px;
+  }
+
+  /* CARDS RESPONSIVE */
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<button class="menuBtn" onclick="toggleSidebar()" id="menuBtn">☰</button>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo-wrapper">
+  <img src="pictures/silver strikers logo.png" alt="company-logo"></div><br>
+  <h2>Accounting</h2>
+
+  <button class="active" onclick="go('dashboard.html')">Dashboard</button>
+  <button onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+  <button onclick="go('invoice-list.html')">Invoices</button>
+  <button onclick="go('customers.html')">Customers</button>
+  <button onclick="go('journallist.html')">Journals</button>
+  <button onclick="go('journal-ledger.html')">Ledger</button>
+  <button onclick="go('userlist.html')">Users</button>
+  <button onclick="go('reports.html')">Reports</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
+
+  <h2>Dashboard</h2>
+
+  <div style="display:flex; gap:10px; align-items:center;">
+    <span id="userInfo" style="font-weight:bold; color:#2c3e50;">
+      Loading...
+    </span>
+
+    <button onclick="logout()" style="
+      background:red;
+      color:white;
+      border:none;
+      padding:6px 12px;
+      border-radius:5px;
+      cursor:pointer;">
+      Logout
+    </button>
+  </div>
+
+</div>
+
+  <!-- DASHBOARD CARDS -->
+<div class="cards">
+
+  <div class="card">
+    <div class="label">Total Invoices</div>
+    <div class="number" id="totalInvoices">0</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Total Revenue</div>
+    <div class="number" id="totalRevenue">0</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Customers</div>
+    <div class="number" id="totalCustomers">0</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Receivables</div>
+    <div class="number" id="receivables">0</div>
+  </div>
+
+</div>
+
+<br><br>
+
+<h3>Invoice Breakdown</h3>
+
+<div class="cards">
+
+  <div class="card"
+       onclick="openInvoices('Paid')"
+       style="cursor:pointer;">
+    <div class="label">Paid</div>
+    <div class="number" id="paidInvoices">0</div>
+  </div>
+
+  <div class="card"
+       onclick="openInvoices('Unpaid')"
+       style="cursor:pointer;">
+    <div class="label">Unpaid</div>
+    <div class="number" id="unpaidInvoices">0</div>
+  </div>
+
+  <div class="card"
+       onclick="openInvoices('Partial')"
+       style="cursor:pointer;">
+    <div class="label">Partial</div>
+    <div class="number" id="partialInvoices">0</div>
+  </div>
+
+  <div class="card"
+       onclick="openInvoices('Overdue')"
+       style="cursor:pointer;">
+    <div class="label">Overdue</div>
+    <div class="number" id="overdueInvoices">0</div>
+  </div>
+
+</div>
+<!-- FIREBASE -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+/* =========================
+   LOAD DASHBOARD DATA
+========================= */
+async function loadDashboard() {
+
+  try {
+
+    const invoicesSnap = await getDocs(collection(db, "invoices"));
+    const customersSnap = await getDocs(collection(db, "customers"));
+
+    let totalInvoices = 0;
+    let totalRevenue = 0;
+    let receivables = 0;
+
+    let paidInvoices = 0;
+    let unpaidInvoices = 0;
+    let partialInvoices = 0;
+    let overdueInvoices = 0;
+
+    const today = new Date();
+
+    invoicesSnap.forEach((docSnap) => {
+
+      const data = docSnap.data();
+
+      /* 🚨 IMPORTANT: EXCLUDE CANCELLED */
+      if (data.status === "Cancelled") return;
+
+      totalInvoices++;
+
+      const amount = Number(data.total || 0);
+      const paid = Number(data.paid || 0);
+
+      totalRevenue += amount;
+      receivables += (amount - paid);
+
+      const status = data.status || "Unpaid";
+
+      if (status === "Paid") paidInvoices++;
+      if (status === "Unpaid") unpaidInvoices++;
+      if (status === "Partial") partialInvoices++;
+
+      /* overdue logic */
+      if (data.dueDate) {
+
+        const dueDate = new Date(data.dueDate);
+
+        if (dueDate < today && status !== "Paid") {
+          overdueInvoices++;
+        }
+      }
+    });
+
+    /* =========================
+       UPDATE UI SAFELY
+    ========================= */
+
+    document.getElementById("totalInvoices").textContent = totalInvoices;
+    document.getElementById("totalRevenue").textContent =
+      "MWK " + totalRevenue.toLocaleString();
+
+    document.getElementById("totalCustomers").textContent =
+      customersSnap.size;
+
+    document.getElementById("receivables").textContent =
+      "MWK " + receivables.toLocaleString();
+
+    document.getElementById("paidInvoices").textContent = paidInvoices;
+    document.getElementById("unpaidInvoices").textContent = unpaidInvoices;
+    document.getElementById("partialInvoices").textContent = partialInvoices;
+    document.getElementById("overdueInvoices").textContent = overdueInvoices;
+
+  } catch (err) {
+    console.error("Dashboard error:", err);
+  }
+}
+
+/* =========================
+   NAV
+========================= */
+window.go = function(page) {
+  window.location.href = page;
+};
+
+window.openInvoices = function(type) {
+  window.location.href =
+    "invoice-list.html?filter=" + encodeURIComponent(type);
+};
+
+/* =========================
+   INIT
+========================= */
+loadDashboard();
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+onAuthStateChanged(auth, async (user) => {
+
+  if (!user) {
+    window.location.href = "loginform.html";
+    return;
+  }
+
+  try {
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      const data = snap.data();
+
+      document.getElementById("userInfo").textContent =
+        `${data.fullname} (${data.role})`;
+    } else {
+      document.getElementById("userInfo").textContent = user.email;
+    }
+
+  } catch (err) {
+    console.error("User load error:", err);
+    document.getElementById("userInfo").textContent = user.email;
+  }
+
+});
+
+window.logout = async function () {
+  await signOut(auth);
+  window.location.href = "loginform.html";
+};
+
+window.toggleSidebar = function () {
+  const sidebar = document.querySelector(".sidebar");
+  const btn = document.getElementById("menuBtn");
+
+  sidebar.classList.toggle("show");
+
+  btn.textContent = sidebar.classList.contains("show") ? "✖" : "☰";
+};
+
+/* auto close sidebar when clicking menu item */
+document.querySelectorAll(".sidebar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.remove("show");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
+
+</script>
+
+</body>
+</html>

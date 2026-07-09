@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Makwacha - Profit & Loss</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+/* LAYOUT */
+body{
+  display:flex;
+  height:100vh;
+  background:#f4f6f9;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#1e2a38;
+  color:white;
+  padding:20px;
+}
+
+.sidebar h2{
+  margin-bottom:20px;
+  font-size:18px;
+}
+
+.sidebar button{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  background:transparent;
+  border:1px solid #34495e;
+  color:white;
+  cursor:pointer;
+  text-align:left;
+  border-radius:5px;
+}
+
+.sidebar button:hover{
+  background:#34495e;
+}
+
+.active{
+  background:#007bff !important;
+}
+
+.logo-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f4f6f9;
+  border-radius:15px;
+}
+
+.logo-wrapper img{
+  width:clamp(50px,15vw,100px);
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:25px;
+  overflow:auto;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.print-btn{
+  background:#001F54;
+  color:white;
+  border:none;
+  padding:10px 15px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.section{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  margin-bottom:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  background:#001F54;
+  color:white;
+  padding:10px;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+}
+
+.amount{
+  text-align:right;
+}
+
+.summary{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  font-weight:bold;
+}
+
+.profit{
+  color:green;
+}
+
+.loss{
+  color:red;
+}
+
+/* PRINT */
+@media print{
+  .sidebar,
+  .print-btn{
+    display:none !important;
+  }
+
+  th{
+    background:#001F54 !important;
+    color:white !important;
+    -webkit-print-color-adjust:exact;
+  }
+
+  body{
+    background:white;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+<div class="logo-wrapper">
+<img src="pictures/silver strikers logo.png">
+</div>
+
+<br>
+
+<h2>Accounting</h2>
+
+<button onclick="go('dashboard.html')">Dashboard</button>
+<button onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+<button onclick="go('invoice-list.html')">Invoices</button>
+<button onclick="go('customers.html')">Customers</button>
+<button onclick="go('journallist.html')">Journals</button>
+<button class="active" onclick="go('reports.html')">Reports</button>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header">
+<h2>Profit & Loss</h2>
+<button class="print-btn" onclick="window.print()">🖨 Print</button>
+</div>
+
+<div class="section">
+
+<h3>Income</h3>
+<table>
+<thead>
+<tr>
+<th>Account</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody id="incomeBody"></tbody>
+<tfoot>
+<tr>
+<th>Total Income</th>
+<th id="totalIncome">0</th>
+</tr>
+</tfoot>
+</table>
+
+</div>
+
+<div class="section">
+
+<h3>Expenses</h3>
+<table>
+<thead>
+<tr>
+<th>Account</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody id="expenseBody"></tbody>
+<tfoot>
+<tr>
+<th>Total Expenses</th>
+<th id="totalExpense">0</th>
+</tr>
+</tfoot>
+</table>
+
+</div>
+
+<div class="summary">
+
+<div class="row">
+<span>Net Profit / Loss</span>
+<span id="net" class=""></span>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+window.go = (p)=>location.href=p;
+
+async function loadPL(){
+
+  const coaSnap = await getDocs(collection(db,"chartOfAccounts"));
+  const journalSnap = await getDocs(collection(db,"journals"));
+
+  const accounts = [];
+  coaSnap.forEach(d=>accounts.push(d.data()));
+
+  const balances = {};
+
+  accounts.forEach(a=>{
+    balances[a.code] = 0;
+  });
+
+  journalSnap.forEach(j=>{
+    const data = j.data();
+
+    (data.lines || []).forEach(l=>{
+
+      const code = l.accountCode || l.account || l.accountName;
+      const debit = Number(l.debit||0);
+      const credit = Number(l.credit||0);
+
+      if(!balances[code]) balances[code]=0;
+
+      balances[code] += (debit - credit);
+    });
+  });
+
+  let income = 0;
+  let expense = 0;
+
+  const incomeBody = document.getElementById("incomeBody");
+  const expenseBody = document.getElementById("expenseBody");
+
+  incomeBody.innerHTML = "";
+  expenseBody.innerHTML = "";
+
+  accounts.forEach(a=>{
+
+    const bal = balances[a.code] || 0;
+
+    const row = `
+      <tr>
+        <td>${a.code} - ${a.name}</td>
+        <td class="amount">${bal.toLocaleString()}</td>
+      </tr>
+    `;
+
+    if(a.type === "Income"){
+      income += bal;
+      incomeBody.innerHTML += row;
+    }
+
+    if(a.type === "Expense"){
+      expense += bal;
+      expenseBody.innerHTML += row;
+    }
+  });
+
+  document.getElementById("totalIncome").innerText =
+    income.toLocaleString();
+
+  document.getElementById("totalExpense").innerText =
+    expense.toLocaleString();
+
+  const net = income - expense;
+
+  const netEl = document.getElementById("net");
+  netEl.innerText = net.toLocaleString();
+
+  netEl.className = net >= 0 ? "profit" : "loss";
+}
+
+loadPL();
+
+</script>
+
+</body>
+</html>

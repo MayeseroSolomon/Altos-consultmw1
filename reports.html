@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Makwacha - Reports</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+/* LAYOUT */
+body{
+  display:flex;
+  height:100vh;
+  background:#f4f6f9;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#1e2a38;
+  color:white;
+  padding:20px;
+}
+
+.sidebar h2{
+  margin-bottom:20px;
+  font-size:18px;
+}
+
+.sidebar button{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  background:transparent;
+  border:1px solid #34495e;
+  color:white;
+  cursor:pointer;
+  text-align:left;
+  border-radius:5px;
+}
+
+.sidebar button:hover{
+  background:#34495e;
+}
+
+.active{
+  background:#007bff !important;
+}
+
+.logo-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f4f6f9;
+  border-radius:15px;
+}
+
+.logo-wrapper img{
+  width:clamp(50px,15vw,100px);
+  min-width:80px;
+  max-width:150px;
+  height:auto;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:25px;
+  overflow:auto;
+}
+
+.page-title{
+  margin-bottom:20px;
+  color:#2c3e50;
+}
+
+/* REPORT CARDS */
+.report-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:20px;
+}
+
+.report-card{
+  background:white;
+  border-radius:10px;
+  padding:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  transition:.2s;
+  cursor:pointer;
+}
+
+.report-card:hover{
+  transform:translateY(-3px);
+}
+
+.report-card h3{
+  color:#001F54;
+  margin-bottom:10px;
+}
+
+.report-card p{
+  color:#666;
+  font-size:13px;
+  line-height:1.5;
+}
+
+.report-btn{
+  margin-top:15px;
+  background:#001F54;
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:5px;
+  cursor:pointer;
+}
+/* =========================
+   HAMBURGER (ADDED)
+========================= */
+.menuBtn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2000;
+  font-size: 24px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* =========================
+   MOBILE NAV (ADDED)
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    height: 100%;
+    transition: 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .menuBtn {
+    display: block;
+  }
+}
+</style>
+</head>
+
+<body>
+  <button class="menuBtn" onclick="toggleSidebar()" id="menuBtn">☰</button>
+
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+<div class="logo-wrapper">
+<img src="pictures/silver strikers logo.png" alt="company-logo">
+</div>
+
+<br>
+
+<h2>Accounting</h2>
+
+<button onclick="go('dashboard.html')">Dashboard</button>
+<button onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+<button onclick="go('invoice-list.html')">Invoices</button>
+<button onclick="go('customers.html')">Customers</button>
+<button onclick="go('journallist.html')">Journals</button>
+<button class="active" onclick="go('reports.html')">Reports</button>
+<button onclick="go('account-settings.html')">Settings</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h2 class="page-title">Financial Reports</h2>
+
+<div class="report-grid">
+
+<div class="report-card">
+<h3>Trial Balance</h3>
+<p>
+Shows all account balances and verifies that
+total debits equal total credits.
+</p>
+<button class="report-btn"
+onclick="go('trial-balance.html')">
+Open Report
+</button>
+</div>
+
+<div class="report-card">
+<h3>General Ledger</h3>
+<p>
+Detailed posting history for all accounts.
+</p>
+<button class="report-btn"
+onclick="go('general-ledger.html')">
+Open Report
+</button>
+</div>
+
+<div class="report-card">
+<h3>Profit & Loss</h3>
+<p>
+Revenue, expenses and net profit for the period.
+</p>
+<button class="report-btn"
+onclick="go('profit-loss.html')">
+Open Report
+</button>
+</div>
+
+<div class="report-card">
+<h3>Balance Sheet</h3>
+<p>
+Assets, liabilities and equity position.
+</p>
+<button class="report-btn"
+onclick="go('balance-sheet.html')">
+Open Report
+</button>
+</div>
+
+<div class="report-card">
+<h3>Cash Flow Statement</h3>
+<p>
+Tracks operating, investing and financing cash.
+</p>
+<button class="report-btn"
+onclick="go('cash-flow.html')">
+Open Report
+</button>
+</div>
+
+<div class="report-card">
+<h3>Aged Receivables</h3>
+<p>
+Outstanding customer balances grouped by age.
+</p>
+<button class="report-btn"
+onclick="go('aged-receivables.html')">
+Open Report
+</button>
+</div>
+
+<div class="report-card">
+<h3>Aged Payables</h3>
+<p>
+Outstanding supplier balances grouped by age.
+</p>
+<button class="report-btn"
+onclick="go('aged-payables.html')">
+Open Report
+</button>
+</div>
+
+<div class="report-card">
+<h3>VAT Report</h3>
+<p>
+Input VAT, Output VAT and tax payable summary.
+</p>
+<button class="report-btn"
+onclick="go('vat-report.html')">
+Open Report
+</button>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+  /* ✅ ADDED: MOBILE TOGGLE */
+window.toggleSidebar = function () {
+  const sidebar = document.querySelector(".sidebar");
+  const btn = document.getElementById("menuBtn");
+
+  sidebar.classList.toggle("show");
+
+  btn.textContent = sidebar.classList.contains("show") ? "✖" : "☰";
+};
+
+/* auto close on click */
+document.querySelectorAll(".sidebar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.remove("show");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
+function go(page){
+  window.location.href = page;
+}
+</script>
+
+</body>
+</html>

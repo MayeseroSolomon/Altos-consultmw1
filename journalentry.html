@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal Entry</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+    padding:30px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.card{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 12px rgba(0,0,0,.08);
+    overflow:hidden;
+}
+
+.header{
+    background:#1f4e79;
+    color:#fff;
+    padding:20px;
+}
+
+.form-section{
+    padding:20px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+}
+
+.field label{
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+.field input,
+.field textarea{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+.field textarea{
+    min-height:80px;
+}
+
+.table-container{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#f1f3f6;
+    padding:12px;
+    text-align:left;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #eee;
+}
+
+select,
+.line-desc,
+.amount{
+    width:100%;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+.remove-btn{
+    background:#dc3545;
+    color:white;
+    border:none;
+    width:35px;
+    height:35px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.add-line{
+    margin-top:15px;
+    background:#198754;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.summary{
+    margin-top:25px;
+    display:flex;
+    justify-content:flex-end;
+}
+
+.summary-box{
+    width:350px;
+    background:#f8f9fa;
+    padding:20px;
+    border-radius:10px;
+}
+
+.summary-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+.actions{
+    margin-top:20px;
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+}
+
+.save-btn{
+    background:#6c757d;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.post-btn{
+    background:#0d6efd;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.balanced{
+    color:green;
+}
+
+.unbalanced{
+    color:red;
+}
+.header{
+    background:#1f4e79;
+    color:#fff;
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+#postingDateDisplay{
+    font-size:14px;
+    opacity:0.9;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="card">
+
+<div class="header">
+<h2><i class="fas fa-book"></i> Journal Entry</h2>
+<div id="postingDateDisplay"></div>
+</div>
+</div>
+
+<div class="form-section">
+
+<div class="form-grid">
+
+<div class="field">
+<label>Journal No</label>
+<input type="text" id="journalNo" readonly>
+</div>
+
+<div class="field">
+  <label>Posting Date</label>
+  <input type="date" id="postingDate" readonly>
+</div>
+
+<div class="field">
+<label>Date</label>
+<input type="date" id="journalDate">
+</div>
+<div class="field">
+<label>Reference</label>
+<input type="text" id="reference">
+</div>
+
+</div>
+
+<div class="field">
+<label>Description</label>
+<textarea id="description"></textarea>
+</div>
+
+<br>
+
+<div class="table-container">
+<table>
+
+<thead>
+<tr>
+<th>Account</th>
+<th>Description</th>
+<th>Debit</th>
+<th>Credit</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="journalBody"></tbody>
+
+</table>
+</div>
+
+<button class="add-line" id="addLineBtn">
+<i class="fas fa-plus"></i> Add Line
+</button>
+
+<div class="summary">
+
+<div class="summary-box">
+
+<div class="summary-row">
+<span>Total Debit</span>
+<span id="totalDebit">0.00</span>
+</div>
+
+<div class="summary-row">
+<span>Total Credit</span>
+<span id="totalCredit">0.00</span>
+</div>
+
+<hr><br>
+
+<div class="summary-row">
+<span>Difference</span>
+<span id="difference">0.00</span>
+</div>
+
+</div>
+
+</div>
+
+<div class="actions">
+
+
+<button class="save-btn" id="cancelBtn">
+<i class="fas fa-times"></i> Cancel
+</button>
+
+<button class="save-btn" id="saveBtn">
+<i class="fas fa-save"></i> Save Draft
+</button>
+
+<button class="save-btn" id="newBtn">
+<i class="fas fa-plus"></i> Post and New
+</button>
+
+
+<button class="post-btn" id="postBtn">
+<i class="fas fa-check"></i> Post and Close
+</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  getDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+/* =========================
+   FIREBASE
+========================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* =========================
+   GLOBAL STATE
+========================= */
+let chartAccounts = [];
+let editId = new URLSearchParams(window.location.search).get("id");
+
+/* =========================
+   SAFE INIT WRAPPER
+========================= */
+window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await init();
+    attachEvents();
+  } catch (err) {
+    console.error("INIT ERROR:", err);
+  }
+});
+
+/* =========================
+   LOAD ACCOUNTS
+========================= */
+async function loadChartAccounts(){
+  chartAccounts = [];
+
+  const snap = await getDocs(collection(db,"chartOfAccounts"));
+
+  snap.forEach(d => {
+    chartAccounts.push({ id: d.id, ...d.data() });
+  });
+}
+
+/* =========================
+   OPTIONS
+========================= */
+function createAccountOptions(){
+  let options = `<option value="">Select Account</option>`;
+
+  chartAccounts.forEach(a => {
+    const code = a.accountCode || a.code || "";
+    const name = a.accountName || a.name || "Account";
+
+    options += `<option value="${a.id}">
+      ${code ? code + " - " : ""}${name}
+    </option>`;
+  });
+
+  return options;
+}
+
+/* =========================
+   ADD LINE
+========================= */
+function addLine(acc="", desc="", dr=0, cr=0){
+
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>
+      <select class="account">${createAccountOptions()}</select>
+    </td>
+    <td><input class="line-desc" value="${desc}"></td>
+    <td><input class="debit" type="number" value="${dr}"></td>
+    <td><input class="credit" type="number" value="${cr}"></td>
+    <td><button class="remove">X</button></td>
+  `;
+
+  document.getElementById("journalBody").appendChild(row);
+
+  row.querySelector(".account").value = acc;
+
+  row.querySelector(".remove").onclick = () => {
+    row.remove();
+    calculateTotals();
+  };
+
+  row.querySelectorAll("input").forEach(i =>
+    i.addEventListener("input", calculateTotals)
+  );
+
+  calculateTotals();
+}
+
+/* =========================
+   TOTALS
+========================= */
+function calculateTotals(){
+
+  let d = 0, c = 0;
+
+  document.querySelectorAll(".debit").forEach(i => d += Number(i.value)||0);
+  document.querySelectorAll(".credit").forEach(i => c += Number(i.value)||0);
+
+  document.getElementById("totalDebit").textContent = d.toFixed(2);
+  document.getElementById("totalCredit").textContent = c.toFixed(2);
+  document.getElementById("difference").textContent = (d-c).toFixed(2);
+}
+
+/* =========================
+   VALIDATION
+========================= */
+function validate(){
+
+  const rows = document.querySelectorAll("#journalBody tr");
+
+  if(rows.length === 0){
+    alert("Journal must have at least one line.");
+    return false;
+  }
+
+  let d = Number(document.getElementById("totalDebit").textContent);
+  let c = Number(document.getElementById("totalCredit").textContent);
+
+  // ❌ NEW RULE: prevent zero-value journals
+  if(d === 0 && c === 0){
+    alert("Journal cannot have zero value. Enter debit or credit amounts.");
+    return false;
+  }
+
+  // ❌ must balance
+  if(d !== c){
+    alert("Journal is not balanced.");
+    return false;
+  }
+
+  let invalidLine = false;
+
+  rows.forEach(r => {
+
+    const account = r.querySelector(".account")?.value;
+    const debit = Number(r.querySelector(".debit")?.value) || 0;
+    const credit = Number(r.querySelector(".credit")?.value) || 0;
+
+    // must have account
+    if(!account){
+      invalidLine = true;
+    }
+
+    // must have at least one value
+    if(debit === 0 && credit === 0){
+      invalidLine = true;
+    }
+
+  });
+
+  if(invalidLine){
+    alert("Each line must have an account and either debit or credit value.");
+    return false;
+  }
+
+  return true;
+}
+/* =========================
+   SAVE
+========================= */
+async function save(status){
+
+  const rows = document.querySelectorAll("#journalBody tr");
+
+  const lines = [];
+
+  rows.forEach(r => {
+
+    const sel = r.querySelector(".account");
+
+    const selectedAccount = chartAccounts.find(
+      a => a.id === sel.value
+    );
+
+    const accountCode =
+      selectedAccount?.code ||
+      selectedAccount?.accountCode ||
+      "";
+
+    const accountName =
+      selectedAccount?.name ||
+      selectedAccount?.accountName ||
+      "";
+
+    lines.push({
+      accountId: sel.value,
+      accountCode,   // ✅ ALWAYS CLEAN
+      accountName,   // ✅ ALWAYS CLEAN
+      description: r.querySelector(".line-desc").value,
+      debit: Number(r.querySelector(".debit").value) || 0,
+      credit: Number(r.querySelector(".credit").value) || 0
+    });
+
+  });
+
+  const data = {
+    journalNo: document.getElementById("journalNo").value,
+    date: document.getElementById("journalDate").value,
+    reference: document.getElementById("reference").value,
+    description: document.getElementById("description").value,
+    lines,
+    totalDebit: Number(document.getElementById("totalDebit").textContent),
+    totalCredit: Number(document.getElementById("totalCredit").textContent),
+    status,
+    updatedAt: Date.now()
+  };
+
+  data.postingDate =
+    document.getElementById("postingDate").value;
+
+  if(status === "Posted"){
+    data.postingDate = new Date().toISOString().split("T")[0];
+  }
+
+  if(editId){
+    await updateDoc(doc(db,"journals",editId), data);
+  } else {
+    data.createdAt = Date.now();
+    await addDoc(collection(db,"journals"), data);
+  }
+}
+/* =========================
+   INIT PAGE
+========================= */
+async function init(){
+
+  await loadChartAccounts();
+
+  const today = new Date().toISOString().split("T")[0];
+
+// default journal date
+document.getElementById("journalDate").value = today;
+
+// default posting date
+document.getElementById("postingDate").value = today;
+
+  if(editId){
+    await loadEdit();
+  } else {
+    await generateNo();
+    addLine();
+    addLine();
+  }
+}
+
+/* =========================
+   JOURNAL NO
+========================= */
+async function generateNo(){
+
+  const snap = await getDocs(collection(db,"journals"));
+
+  let max = 0;
+
+  snap.forEach(d => {
+    const m = (d.data().journalNo || "").match(/JE-(\d+)/);
+    if(m) max = Math.max(max, Number(m[1]));
+  });
+
+  document.getElementById("journalNo").value =
+    `JE-${String(max+1).padStart(5,"0")}`;
+}
+
+/* =========================
+   LOAD EDIT
+========================= */
+async function loadEdit(){
+
+  const snap = await getDoc(doc(db,"journals",editId));
+  if(!snap.exists()) return;
+
+  const j = snap.data();
+
+  document.getElementById("journalNo").value = j.journalNo;
+  document.getElementById("journalDate").value = j.date;
+  document.getElementById("reference").value = j.reference;
+  document.getElementById("description").value = j.description;
+
+  document.getElementById("journalBody").innerHTML = "";
+
+  (j.lines || []).forEach(l => {
+    addLine(l.accountId, l.description, l.debit, l.credit);
+  });
+}
+
+/* =========================
+   EVENTS (IMPORTANT FIX)
+========================= */
+function attachEvents(){
+
+  document.getElementById("addLineBtn").onclick = () => addLine();
+
+  document.getElementById("saveBtn").onclick = async () => {
+    if(!validate()) return;
+    await save("Draft");
+    window.location.href = "journallist.html";
+  };
+
+  document.getElementById("postBtn").onclick = async () => {
+    if(!validate()) return;
+    await save("Posted");
+    window.location.href = "journallist.html";
+  };
+
+  document.getElementById("newBtn").onclick = async () => {
+    if(!validate()) return;
+    await save("Posted");
+    location.reload();
+  };
+
+  document.getElementById("cancelBtn").onclick = () => {
+    window.location.href = "journallist.html";
+  };
+}
+
+</script>
+</body>
+</html>

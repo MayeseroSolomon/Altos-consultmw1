@@ -1,0 +1,553 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Invoice</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  width: 980px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 { text-align: center; }
+
+/* TOP */
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.box {
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* LABELS */
+label {
+  font-size: 11px;
+  color: #444;
+  display: block;
+  margin-top: 6px;
+}
+
+/* INPUTS */
+input, select, textarea {
+  width: 80%;
+  padding: 6px;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ITEMS */
+.item-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1fr 60px;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.remove-btn { background: red; }
+
+.cancel-btn { background: #dc3545; }
+
+/* ================= CUSTOMER SEARCH ================= */
+.customer-wrapper {
+  position: relative;
+}
+
+#customerSearch {
+  width: 80%;
+  padding: 6px;
+  margin-top: 3px;
+}
+
+.dropdown {
+  position: absolute;
+  width: 80%;
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 160px;
+  overflow-y: auto;
+  display: none;
+  z-index: 10;
+}
+
+.dropdown div {
+  padding: 6px;
+  cursor: pointer;
+}
+
+.dropdown div:hover {
+  background: #eee;
+}
+
+/* ================= DISCOUNT + TAX ================= */
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.calc-box {
+  background: #f8f9fb;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  align-items: center;
+}
+
+.row span { font-size: 12px; }
+
+.row input, .row select { width: 45%; }
+
+/* SUMMARY */
+.summary {
+  margin-top: 15px;
+  background: #f1f3f5;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.summary div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Create Invoice</h2>
+
+<div id="invoiceNo"></div>
+
+<div class="top-grid">
+
+<!-- LEFT -->
+<div class="box">
+
+<label>Customer</label>
+<div class="customer-wrapper">
+
+  <div style="position:relative; width:80%;">
+    <input id="customerSearch" placeholder="Search customer...">
+
+    <!-- ADD CUSTOMER BUTTON -->
+    <button type="button"
+      onclick="goAddCustomer()"
+      style="
+        position:absolute;
+        right:6px;
+        top:50%;
+        transform:translateY(-50%);
+        width:22px;
+        height:22px;
+        border-radius:50%;
+        border:none;
+        background:#28a745;
+        color:white;
+        font-size:16px;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      ">+</button>
+  </div>
+
+  <div id="customerDropdown" class="dropdown"></div>
+
+</div>
+<label>Description</label>
+<textarea id="description"></textarea>
+
+<label>Date</label>
+<input type="date" id="invoiceDate">
+
+</div>
+
+<!-- RIGHT -->
+<div class="box">
+
+<label>Terms</label>
+<select id="terms"></select>
+
+<label>Due</label>
+<input type="date" id="dueDate">
+
+<label>Status</label>
+<select id="status">
+  <option>Unpaid</option>
+  <option>Paid</option>
+</select>
+
+<div id="paymentSection" style="display:none;">
+  <label>Pay Method</label>
+  <select id="paymentMethod">
+    <option>Cash</option>
+    <option>Bank</option>
+    <option>Mobile</option>
+  </select>
+
+  <label>Amount Paid</label>
+  <input type="number" id="amountPaid">
+</div>
+
+</div>
+</div>
+
+<h3>Items</h3>
+<div id="items"></div>
+<button onclick="addItem()">+ Add Item</button>
+
+<!-- DISCOUNT + TAX -->
+<div class="calc-grid">
+
+<div class="calc-box">
+<h4>Discount</h4>
+
+<div class="row">
+  <span>Value</span>
+  <input type="number" id="discountValue" value="0">
+</div>
+
+<div class="row">
+  <span>Type</span>
+  <select id="discountType">
+    <option value="percent">%</option>
+    <option value="fixed">Fixed</option>
+  </select>
+</div>
+
+<div class="row">
+  <span>Mode</span>
+  <select id="discountTiming">
+    <option value="before">Before Tax</option>
+    <option value="after">After Tax</option>
+  </select>
+</div>
+</div>
+
+<div class="calc-box">
+<h4>Tax</h4>
+
+<div class="row">
+  <span>VAT %</span>
+  <input type="number" id="vat" value="16">
+</div>
+
+</div>
+
+</div>
+
+<!-- SUMMARY -->
+<div class="summary">
+<div><span>Subtotal</span><b id="subtotal">0</b></div>
+<div><span>Discount</span><b id="discount">0</b></div>
+<div><span>VAT</span><b id="vatAmount">0</b></div>
+<div><span>Grand</span><b id="grand">0</b></div>
+
+<!-- ADDED -->
+<div><span>Paid</span><b id="paidAmount">0</b></div>
+<div><span>Due</span><b id="dueAmount">0</b></div>
+
+</div>
+
+<button onclick="saveInvoice()">Save Invoice</button>
+<button class="cancel-btn" onclick="goBack()">Cancel</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+/* ================= FIREBASE ================= */
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+/* ================= SETTINGS (IMPORTANT FIX) ================= */
+let settings = {
+  receivablesAccount: "Accounts Receivable",
+  salesAccount: "Sales Revenue",
+  taxAccount: "VAT Payable"
+};
+
+async function loadSettings() {
+  const snap = await getDocs(collection(db, "settings"));
+
+  snap.forEach(d => {
+    const s = d.data();
+
+    if (s.receivablesAccount) settings.receivablesAccount = s.receivablesAccount;
+    if (s.salesAccount) settings.salesAccount = s.salesAccount;
+    if (s.taxAccount) settings.taxAccount = s.taxAccount;
+
+    // ADDED FOR SETTINGS PAGE COMPATIBILITY
+    if (s.vatAccount) settings.taxAccount = s.vatAccount;
+  });
+}
+/* ================= STATE ================= */
+let customers = [];
+let selectedCustomerCode = "";
+let invoiceNo = "";
+
+/* ================= DOM ================= */
+const search = document.getElementById("customerSearch");
+const dropdown = document.getElementById("customerDropdown");
+
+/* ================= CUSTOMERS (FIXED) ================= */
+async function loadCustomers() {
+  const snap = await getDocs(collection(db, "customers"));
+  customers = snap.docs.map(d => d.data());
+  renderCustomer("");
+}
+
+function renderCustomer(filter) {
+  dropdown.innerHTML = "";
+
+  customers
+    .filter(c =>
+      (c.name || "").toLowerCase().includes(filter.toLowerCase()) ||
+      (c.customerCode || "").toLowerCase().includes(filter.toLowerCase())
+    )
+    .forEach(c => {
+
+      const div = document.createElement("div");
+      div.innerHTML = `<b>${c.customerCode}</b> - ${c.name}`;
+
+      div.onclick = () => {
+        search.value = `${c.customerCode} - ${c.name}`;
+        selectedCustomerCode = c.customerCode;
+        dropdown.style.display = "none";
+      };
+
+      dropdown.appendChild(div);
+    });
+}
+
+search.addEventListener("focus", () => {
+  dropdown.style.display = "block";
+  renderCustomer(search.value);
+});
+
+search.addEventListener("input", e => renderCustomer(e.target.value));
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".customer-wrapper")) {
+    dropdown.style.display = "none";
+  }
+});
+
+/* ================= INVOICE NUMBER ================= */
+async function generateInvoiceNumber() {
+  const snap = await getDocs(collection(db, "invoices"));
+
+  let highest = 0;
+
+  snap.forEach(d => {
+    const n = parseInt((d.data().invoiceNo || "").replace("INV-", ""));
+    if (!isNaN(n) && n > highest) highest = n;
+  });
+
+  invoiceNo = "INV-" + String(highest + 1).padStart(5, "0");
+  document.getElementById("invoiceNo").innerText = invoiceNo;
+}
+
+/* ================= CALCULATION (FIXED) ================= */
+function calc() {
+
+  let subtotal = 0;
+
+  document.querySelectorAll(".item-row").forEach(r => {
+    subtotal +=
+      Number(r.querySelector(".qty")?.value || 0) *
+      Number(r.querySelector(".price")?.value || 0);
+  });
+
+  const discount = Number(document.getElementById("discountValue").value || 0);
+  const vatRate = Number(document.getElementById("vat").value || 0);
+
+  const taxable = subtotal - discount;
+  const vat = taxable * vatRate / 100;
+  const grand = taxable + vat;
+
+  document.getElementById("subtotal").innerText = subtotal.toFixed(2);
+  document.getElementById("discount").innerText = discount.toFixed(2);
+  document.getElementById("vatAmount").innerText = vat.toFixed(2);
+  document.getElementById("grand").innerText = grand.toFixed(2);
+
+  return { subtotal, discount, vat, grand };
+}
+
+/* ================= ITEMS ================= */
+window.addItem = function () {
+
+  const div = document.createElement("div");
+  div.className = "item-row";
+
+  div.innerHTML = `
+    <input class="desc">
+    <input class="qty" type="number" value="1">
+    <input class="price" type="number">
+    <button type="button" class="remove-btn">X</button>
+  `;
+
+  div.querySelector(".remove-btn").onclick = () => {
+    div.remove();
+    calc();
+  };
+
+  div.querySelectorAll("input").forEach(i =>
+    i.addEventListener("input", calc)
+  );
+
+  document.getElementById("items").appendChild(div);
+};
+
+/* ================= JOURNAL (FIXED + SETTINGS BASED) ================= */
+async function createJournal(payload, calcData) {
+
+  const total = calcData.grand;
+  const vat = calcData.vat;
+  const netSales = total - vat;
+
+  const journal = {
+    date: payload.invoiceDate,
+    reference: payload.invoiceNo,
+    description: `Invoice ${payload.invoiceNo} - ${payload.customerName}`,
+
+    lines: [
+      {
+        account: settings.receivablesAccount,
+        debit: total,
+        credit: 0,
+        description: "Invoice receivable"
+      },
+      {
+        account: settings.salesAccount,
+        debit: 0,
+        credit: netSales,
+        description: "Sales revenue"
+      },
+      {
+        account: settings.taxAccount,
+        debit: 0,
+        credit: vat,
+        description: "VAT output"
+      }
+    ],
+
+    createdAt: new Date()
+  };
+
+  await addDoc(collection(db, "journal"), journal);
+}
+
+/* ================= SAVE (FIXED BUTTON) ================= */
+window.saveInvoice = async function () {
+
+  const calcData = calc();
+
+  if (!selectedCustomerCode) {
+    alert("Please select a customer");
+    return;
+  }
+
+  const items = [];
+
+  document.querySelectorAll(".item-row").forEach(r => {
+    const qty = Number(r.querySelector(".qty").value);
+    const price = Number(r.querySelector(".price").value);
+
+    if (qty && price) {
+      items.push({
+        desc: r.querySelector(".desc").value,
+        qty,
+        price
+      });
+    }
+  });
+
+  const payload = {
+    invoiceNo,
+    customerCode: selectedCustomerCode,
+    customerName: search.value,
+    description: document.getElementById("description").value,
+    items,
+    total: calcData.grand,
+    vatAmount: calcData.vat,
+    paid: Number(document.getElementById("amountPaid")?.value || 0),
+    invoiceDate: document.getElementById("invoiceDate").value,
+    dueDate: document.getElementById("dueDate").value,
+    status: document.getElementById("status").value
+  };
+
+  await addDoc(collection(db, "invoices"), payload);
+
+  await createJournal(payload, calcData);
+
+  alert("Invoice saved successfully");
+  window.location.href = "invoice-list.html";
+};
+
+/* ================= INIT (FIXED ORDER) ================= */
+(async function init() {
+
+  await loadSettings();
+  await loadCustomers();
+  await generateInvoiceNumber();
+
+  document.getElementById("invoiceDate").value =
+    new Date().toISOString().split("T")[0];
+
+  addItem();
+})();
+</script>
+</body>
+</html>

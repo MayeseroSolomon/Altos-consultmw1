@@ -1,0 +1,325 @@
+/* ==========================================================================
+   1. GLOBAL & BASE STYLES
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+    background: #f4f4f4;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    /* Cross-browser scrollbar hiding */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Chrome, Safari, and Opera scrollbar hiding */
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    height: 0 !important;
+}
+/* ==========================================================================
+   4. CONTENT AND LAYOUT STYLES
+   ========================================================================== */
+.content-wrapper{
+    margin-top: 80px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    overflow-y: auto;
+}
+.contact-header{
+    position:relative;
+    width:100%;
+    height:600px;
+    overflow:hidden;
+}
+
+/* DARK OVERLAY */
+
+.contact-header {
+    position: relative;
+    width: 100%;
+    height: 600px;
+
+    /* 👇 THIS is your cover image */
+    background: url("pictures/Sage50cloud-Dashboard-hero.png") center/cover no-repeat;
+
+    overflow: hidden;
+}
+.contact-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1;
+}
+.getintouch {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+
+    z-index: 2;
+    color: white;
+    width: 90%;
+}
+.open-contact-modal {
+    margin-top: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+}
+
+.open-contact-modal:hover {
+    transform: translateY(-3px);
+}
+/* OPEN BUTTON */
+.contact-btn{
+    background:#ffd700;
+    color:#0b1f3a;
+    border:none;
+    padding:14px 28px;
+    border-radius:30px;
+    cursor:pointer;
+    font-weight:bold;
+}
+.open-contact-modal:after {
+  content: "→";               /* Unicode arrow character */
+  margin-left: 8px;            /* Space between text and arrow */
+  transition: margin-left 0.3s ease;
+}
+.contact-info {
+    padding: 40px 10%;
+    background: linear-gradient(to right, #0f172a, #1e3a8a);
+    color: white;
+    border-radius: 12px;
+}
+.contactinfo-title {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.contactinfo-title h2 {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+
+.contactinfo-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+.info-box {
+    background: white;
+    color: #111827;
+    padding: 30px;
+    border-radius: 15px;
+    transition: 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+
+    /* FIX */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.contact-icon {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+.contacticon-wrapper{
+display: block;
+}
+.info-box:hover {
+    transform: translateY(-10px);
+}
+
+.info-box h3 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: #1e3a8a;
+}
+.info-box p {
+    line-height: 1.6;
+    color: #4b5563;
+}
+.info-box a {
+    color: #0b1f3a;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+.contact-icon {
+    width: 100%;
+    height: auto;
+    max-height: 100px;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+/* MAP SECTION */
+
+.map-section{
+    padding:40px 10%;
+    margin-top:30px;
+    background:linear-gradient(to right, #0f172a, #1e3a8a);
+    border-radius:12px;
+    color:white;
+}
+
+.map-title{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.map-title h2{
+    font-size:40px;
+    margin-bottom:10px;
+}
+
+.map-title p{
+    color:#ffd700;
+}
+
+.map-container{
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,0.3);
+}
+
+.map-container iframe{
+    width:100%;
+    height:450px;
+    border:none;
+    display:block;
+}
+/* MODAL */
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:10000;
+    padding:20px;
+}
+
+.modal-overlay.show{
+    display:flex;
+}
+
+.modal-content{
+    background:white;
+    width:100%;
+    max-width:700px;
+    max-height:90vh;
+    overflow-y:auto;
+    padding:40px;
+    border-radius:20px;
+    position:relative;
+}
+
+.close-modal{
+    position:absolute;
+    right:20px;
+    top:15px;
+    font-size:30px;
+    cursor:pointer;
+    color:#0b1f3a;
+}
+
+/* FORM */
+.contact-form{
+    display:grid;
+    gap:18px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+.form-group label{
+    margin-bottom:8px;
+    font-weight:bold;
+    color:#0b1f3a;
+}
+
+.form-group input,
+.form-group textarea{
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:10px;
+}
+
+.services-checklist{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:10px;
+}
+
+.services-checklist label{
+    font-weight:normal;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.form-buttons{
+    display:flex;
+    gap:15px;
+    margin-top:20px;
+}
+
+.clear-btn{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:30px;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.clear-btn{
+    background:#e5e7eb;
+    color:#333;
+}
+
+.clear-btn:hover{
+    background:#d1d5db;
+}
+
+.submit-btn{
+    background:#0b1f3a;
+    color:white;
+    border:none;
+    padding:14px;
+    border-radius:30px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.submit-btn:hover{
+    background:#ffd700;
+    color:#0b1f3a;
+}
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Journal View</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    font-family: Arial;
+    background:#eef2f7;
+    padding:20px;
+}
+
+/* IMPORTANT: FORCE COLORS IN PRINT */
+* {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+@media print {
+    body{
+        background:white;
+    }
+
+    .no-print{
+        display:none !important;
+    }
+
+    .card{
+        box-shadow:none;
+        border:none;
+    }
+}
+
+/* HEADER */
+.header{
+    text-align:center;
+    margin-bottom:20px;
+    background: linear-gradient(135deg, #001F54, #2d6aa0);
+    color:white;
+    padding:20px;
+    border-radius:10px;
+}
+
+.header img{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    margin-bottom:10px;
+}
+
+.header h2{
+    margin:5px 0;
+    font-size:20px;
+}
+
+.header p{
+    font-size:13px;
+    opacity:0.9;
+}
+
+/* CARD */
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 5px 18px rgba(0,0,0,0.08);
+}
+
+/* TOP INFO */
+.row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+.label{
+    font-weight:bold;
+    color:#333;
+}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    overflow:hidden;
+    border-radius:8px;
+}
+
+th{
+    background:#1f4e79;
+    color:white;
+    padding:10px;
+    font-size:13px;
+}
+
+td{
+    border:1px solid #e6e6e6;
+    padding:8px;
+    font-size:13px;
+}
+
+tr:nth-child(even){
+    background:#f6f9fc;
+}
+
+/* TOTAL BOX */
+.total{
+    text-align:right;
+    margin-top:15px;
+    font-weight:bold;
+    padding:10px;
+    background:#f1f3f6;
+    border-radius:8px;
+}
+
+/* PRINT BUTTON */
+.btn{
+    padding:10px 15px;
+    background:#0d6efd;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    margin-bottom:15px;
+}
+</style>
+</head>
+
+<body>
+
+<button class="btn no-print" onclick="window.print()">Print Journal</button>
+
+<div class="header">
+    <img src="pictures/silver strikers logo.png" />
+    <h2>ALTOS CONSULT</h2>
+    <p>P.O Box 123, Lilongwe, Malawi</p>
+</div>
+
+<div class="card" id="content">
+Loading...
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+const autoPrint = params.get("print") === "1";
+
+async function loadJournal(){
+
+    const snap = await getDoc(doc(db,"journals",id));
+
+    if(!snap.exists()){
+        document.getElementById("content").innerHTML = "Journal not found";
+        return;
+    }
+
+    const j = snap.data();
+
+    let debit = 0;
+    let credit = 0;
+
+    let html = `
+        <div class="row">
+            <div><span class="label">Journal No:</span> ${j.journalNo}</div>
+            <div><span class="label">Date:</span> ${j.date}</div>
+            <div><span class="label">Status:</span> ${j.status}</div>
+        </div>
+
+        <div class="row">
+            <div><span class="label">Reference:</span> ${j.reference || "-"}</div>
+            <div><span class="label">Posting Date:</span> ${j.postingDate || "-"}</div>
+        </div>
+
+        <div style="margin-top:10px;">
+            <span class="label">Description:</span> ${j.description || ""}
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Account</th>
+                    <th>Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    (j.lines || []).forEach(l => {
+
+        debit += Number(l.debit || 0);
+        credit += Number(l.credit || 0);
+
+        html += `
+            <tr>
+                <td>${l.accountName || l.account || ""}</td>
+                <td>${l.description || ""}</td>
+                <td>${Number(l.debit || 0).toFixed(2)}</td>
+                <td>${Number(l.credit || 0).toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+
+        <div class="total">
+            Total Debit: ${debit.toFixed(2)} |
+            Total Credit: ${credit.toFixed(2)}
+        </div>
+    `;
+
+    document.getElementById("content").innerHTML = html;
+}
+
+loadJournal();
+loadJournal().then(() => {
+    if (autoPrint) {
+        setTimeout(() => {
+            window.print();
+        }, 500);
+    }
+});
+
+window.onafterprint = () => {
+    window.close();
+};
+</script>
+
+</body>
+</html>

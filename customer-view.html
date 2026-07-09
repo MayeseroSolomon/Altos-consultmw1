@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Profile</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#f4f6f9;
+  padding:20px;
+}
+
+.container{
+  max-width:1000px;
+  margin:auto;
+}
+
+.header{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  margin-bottom:20px;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.buttons{
+  display:flex;
+  gap:10px;
+}
+
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  color:white;
+}
+
+.statement-btn{ background:#007bff; }
+.back-btn{ background:#6c757d; }
+.add-btn{ background:#001F54; }
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+.card h3{ color:#666; margin-bottom:10px; }
+
+.number{
+  font-size:24px;
+  font-weight:bold;
+  color:#28a745;
+}
+
+table{
+  width:100%;
+  background:white;
+  border-collapse:collapse;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+th{
+  background:#001F54;
+  color:white;
+  padding:12px;
+  text-align:left;
+}
+
+td{
+  padding:12px;
+  border-bottom:1px solid #ddd;
+}
+
+tr:hover{ background:#f1f1f1; }
+
+.status-paid{ color:green; font-weight:bold; }
+.status-unpaid{ color:red; font-weight:bold; }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h2 id="customerName">Loading Customer...</h2>
+
+    <div class="buttons">
+      <button class="statement-btn" onclick="openStatement()">
+  Customer Statement
+</button>
+
+      <button class="back-btn" onclick="goBack()">
+        Back
+      </button>
+
+      <button class="add-btn" onclick="openAddInvoice()">
+        + Add Invoice
+      </button>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Total Invoices</h3>
+      <div class="number" id="totalInvoices">0</div>
+    </div>
+
+    <div class="card">
+      <h3>Total Amount</h3>
+      <div class="number" id="totalAmount">MWK 0</div>
+    </div>
+
+    <div class="card">
+      <h3>Unpaid Invoices</h3>
+      <div class="number" id="unpaidInvoices">0</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Invoice No</th>
+        <th>Description</th>
+        <th>Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody id="invoiceTable">
+      <tr><td colspan="4">Loading invoices...</td></tr>
+    </tbody>
+  </table>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const customerCode = (params.get("code") || "").trim();
+
+document.getElementById("customerName").textContent =
+  "Customer: " + customerCode;
+
+let allInvoices = [];
+
+function clean(v) {
+  return (v || "").toString().trim().toLowerCase();
+}
+
+async function loadCustomerData() {
+  const snapshot = await getDocs(collection(db, "invoices"));
+
+  allInvoices = [];
+
+  const target = clean(customerCode);
+
+  snapshot.forEach(docSnap => {
+    const d = docSnap.data();
+
+    const code = clean(d.customerCode || "");
+
+    if (code === target) {
+      allInvoices.push(d);
+    }
+  });
+
+  render();
+}
+
+function render() {
+  const table = document.getElementById("invoiceTable");
+  table.innerHTML = "";
+
+  let total = 0;
+  let unpaid = 0;
+
+  allInvoices.forEach(inv => {
+    const amount = Number(inv.total || 0);
+    total += amount;
+
+    if (inv.status !== "Paid") unpaid++;
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${inv.invoiceNo}</td>
+      <td>${inv.description || ""}</td>
+      <td>MWK ${amount}</td>
+      <td class="${inv.status === "Paid" ? "status-paid" : "status-unpaid"}">
+        ${inv.status}
+      </td>
+    `;
+
+    // ✅ CLICK TO OPEN INVOICE VIEW
+    row.style.cursor = "pointer";
+    row.onclick = () => {
+      window.location.href =
+        `invoice-view.html?invoiceNo=${encodeURIComponent(inv.invoiceNo)}`;
+    };
+    
+
+    table.appendChild(row);
+  });
+
+  document.getElementById("totalInvoices").textContent = allInvoices.length;
+  document.getElementById("totalAmount").textContent = "MWK " + total;
+  document.getElementById("unpaidInvoices").textContent = unpaid;
+}
+
+window.goBack = () => window.location.href = "customers.html";
+
+window.openAddInvoice = () =>
+  window.location.href = "invoice.html?code=" + encodeURIComponent(customerCode);
+
+
+loadCustomerData();
+
+window.openStatement = function () {
+  window.location.href =
+    "customer-statement.html?customer=" +
+    encodeURIComponent(customerCode);
+};
+</script>
+
+</body>
+</html>

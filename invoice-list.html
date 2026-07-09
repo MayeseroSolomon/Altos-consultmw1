@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice List</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial;
+}
+
+/* LAYOUT */
+body {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #1e2a38;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  background: transparent;
+  border: 1px solid #34495e;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 5px;
+}
+
+.sidebar button:hover {
+  background: #34495e;
+}
+.active{
+  background: #007bff !important;
+}
+.logo-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f6f9;
+  border-radius: 15px;
+}
+.logo-wrapper img{
+  width: clamp(50px,15vw,100px);
+  max-width: 150px;
+  min-width: 80px;
+  height: auto;
+}
+
+
+.main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+input, select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px;
+  background: #001F54;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background: #001F54;
+  color: white;
+}
+
+.amount {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.small {
+  font-size: 12px;
+  color: gray;
+}
+
+.action-btns button{
+  padding:5px 8px;
+  margin-right:5px;
+  font-size:12px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.edit-btn { background:#17a2b8; color:white; }
+.cancel-btn { background:#dc3545; color:white; }
+.pay-btn { background:#28a745; color:white; }
+
+#clearFiltersBtn {
+  background: #6c757d;
+}
+
+#clearFiltersBtn:hover {
+  background: #5a6268;
+}
+
+/* =========================
+   HAMBURGER (ADDED)
+========================= */
+.menuBtn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2000;
+  font-size: 24px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* =========================
+   MOBILE NAV (ADDED)
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    height: 100%;
+    transition: 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .menuBtn {
+    display: block;
+  }
+}
+</style>
+</head>
+
+<body>
+  <button class="menuBtn" onclick="toggleSidebar()" id="menuBtn">☰</button>
+
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo-wrapper">
+  <img src="pictures/silver strikers logo.png" alt="company-logo"></div><br>
+  <h2>Accounting</h2>
+
+  <button onclick="go('dashboard.html')">Dashboard</button>
+  <button onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+  <button class="active"  onclick="go('invoice-list.html')">Invoices</button>
+  <button onclick="go('customers.html')">Customers</button>
+  <button onclick="go('journallist.html')">Journals</button>
+  <button onclick="go('journal-ledger.html')">Ledger</button>
+  <button onclick="go('reports.html')">Reports</button>
+</div>
+
+<div class="main">
+
+<h2>Invoice List</h2>
+
+<div class="top-bar">
+  <button onclick="openInvoiceForm()">+ Add Invoice</button>
+  <button onclick="exportCSV()">Export CSV</button>
+<button onclick="exportExcel()">Export Excel</button>
+<button onclick="exportPDF()">Export PDF</button>
+
+  <select id="sortBy">
+    <option value="date_desc">Sort: Newest First</option>
+    <option value="date_asc">Sort: Oldest First</option>
+    <option value="amount_desc">Amount: High → Low</option>
+    <option value="amount_asc">Amount: Low → High</option>
+    <option value="customer_asc">Customer: A → Z</option>
+    <option value="customer_desc">Customer: Z → A</option>
+    <option value="invoice_asc">Invoice No: Asc</option>
+    <option value="invoice_desc">Invoice No: Desc</option>
+  </select>
+</div>
+
+<div class="filters">
+  <input type="date" id="fromDate">
+  <input type="date" id="toDate">
+  <input type="text" id="customerFilter" placeholder="Customer">
+
+  <select id="statusFilter">
+    <option value="">All</option>
+    <option value="Paid">Paid</option>
+    <option value="Unpaid">Unpaid</option>
+    <option value="Partial">Partial</option>
+  </select>
+  <button id="clearFiltersBtn" style="background:#6c757d;">
+    Clear Filters
+  </button>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Invoice</th>
+  <th>Customer</th>
+  <th>Description</th>
+  <th>Amount</th>
+  <th>Status</th>
+  <th>Date</th>
+  <th>Due Date</th> <!-- NEW -->
+  <th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="invoiceTable">
+<tr><td colspan="7">Loading...</td></tr>
+</tbody>
+
+</table>
+
+</div>
+
+<!-- PAYMENT DETAILS MODAL -->
+<div id="paymentViewModal" style="
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.6);
+  justify-content:center;
+  align-items:center;
+">
+
+  <div style="background:white;width:600px;max-height:80vh;overflow:auto;padding:20px;border-radius:10px;">
+    <h3>Payment Details</h3>
+
+    <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Receipt No</th>
+          <th>Method</th>
+          <th>Reference</th>
+          <th style="text-align:right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody id="paymentDetailsTable"></tbody>
+    </table>
+
+    <div style="display:flex;gap:10px;margin-top:10px;">
+  
+  <button id="addPaymentBtn"
+    style="flex:1;background:#28a745;color:white;padding:10px;border:none;">
+    Add Payment
+  </button>
+
+  <button onclick="closePaymentView()"
+    style="flex:1;background:#dc3545;color:white;padding:10px;border:none;">
+    Close
+  </button>
+
+</div>
+  </div>
+</div>
+
+<script type="module">
+
+let selectedInvoice = null;
+let lastFilteredData = [];
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+/* =========================
+   FIREBASE INIT
+========================= */
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+/* =========================
+   DATA
+========================= */
+let allInvoices = [];
+
+/* =========================
+   HELPERS
+========================= */
+function getTotal(inv) {
+  if (inv.total !== undefined) return inv.total;
+  if (inv.items?.length) {
+    return inv.items.reduce((s, i) => s + (i.lineTotal || 0), 0);
+  }
+  return inv.amount || 0;
+}
+
+function getDescription(inv) {
+  if (inv.items?.length) return inv.items.length + " item(s)";
+  return inv.description || "No description";
+}
+
+function getCustomer(inv) {
+  return inv.customer || inv.customerName || inv.customerCode || "Unknown";
+}
+
+function parseDate(v) {
+  if (!v) return null;
+  if (typeof v === "object" && v.toDate) return v.toDate();
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+}
+
+/* =========================
+   FILTERS
+========================= */
+document.getElementById("fromDate").addEventListener("change", applyFilters);
+document.getElementById("toDate").addEventListener("change", applyFilters);
+document.getElementById("customerFilter").addEventListener("input", applyFilters);
+document.getElementById("statusFilter").addEventListener("change", applyFilters);
+document.getElementById("sortBy").addEventListener("change", applyFilters);
+
+document.getElementById("clearFiltersBtn").onclick = () => {
+  document.getElementById("fromDate").value = "";
+  document.getElementById("toDate").value = "";
+  document.getElementById("customerFilter").value = "";
+  document.getElementById("statusFilter").value = "";
+  document.getElementById("sortBy").value = "date_desc";
+  applyFilters();
+};
+
+/* =========================
+   FILTER + SORT
+========================= */
+function applyFilters() {
+
+  let filtered = [...allInvoices];
+
+  const from = document.getElementById("fromDate").value;
+  const to = document.getElementById("toDate").value;
+  const customer = document.getElementById("customerFilter").value.toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+  const sort = document.getElementById("sortBy").value;
+
+  filtered = filtered.filter(inv => {
+    const d = parseDate(inv.invoiceDate || inv.createdAt);
+
+    if (from && d && d < new Date(from)) return false;
+    if (to && d && d > new Date(to)) return false;
+
+    const name = (getCustomer(inv) || "").toLowerCase();
+    if (customer && !name.includes(customer)) return false;
+
+    if (status && (inv.status || "Unpaid") !== status) return false;
+
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    const da = parseDate(a.invoiceDate || a.createdAt)?.getTime() || 0;
+    const db = parseDate(b.invoiceDate || b.createdAt)?.getTime() || 0;
+
+    const aa = getTotal(a);
+    const bb = getTotal(b);
+
+    switch (sort) {
+      case "date_asc": return da - db;
+      case "date_desc": return db - da;
+      case "amount_asc": return aa - bb;
+      case "amount_desc": return bb - aa;
+      default: return 0;
+    }
+  });
+
+  render(filtered);
+}
+
+/* =========================
+   RENDER (FULL RESTORED)
+========================= */
+function render(data) {
+
+  lastFilteredData = data;
+
+  const table = document.getElementById("invoiceTable");
+  table.innerHTML = "";
+
+  if (!data.length) {
+    table.innerHTML = "<tr><td colspan='8'>No invoices</td></tr>";
+    return;
+  }
+
+  data.forEach(inv => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${inv.invoiceNo || ""}</td>
+      <td>${getCustomer(inv)}</td>
+      <td>${getDescription(inv)}</td>
+      <td>MWK ${getTotal(inv)}</td>
+      <td>${inv.status || "Unpaid"}</td>
+      <td>${parseDate(inv.invoiceDate || inv.createdAt)?.toLocaleDateString() || ""}</td>
+      <td>${parseDate(inv.dueDate)?.toLocaleDateString() || "-"}</td>
+      <td>
+        <button class="edit-btn">Edit</button>
+        <button class="cancel-btn">Cancel</button>
+        <button class="pay-btn">Payments</button>
+      </td>
+    `;
+
+    /* DOUBLE CLICK VIEW */
+    tr.ondblclick = () => {
+      window.location.href = `invoice-view.html?invoiceNo=${inv.invoiceNo}`;
+    };
+
+    /* EDIT */
+    tr.querySelector(".edit-btn").onclick = () => {
+      window.location.href = `invoice.html?edit=${inv.invoiceNo}`;
+    };
+
+    /* =========================
+       CANCEL + REVERSAL JOURNAL
+    ========================= */
+    tr.querySelector(".cancel-btn").onclick = async () => {
+
+      if (inv.payments?.length > 0) {
+        alert("Cannot cancel invoice with payments.");
+        return;
+      }
+
+      if (!confirm("Cancel invoice?")) return;
+
+      await updateDoc(doc(db, "invoices", inv.id), {
+        status: "Cancelled"
+      });
+
+      await addDoc(collection(db, "journals"), {
+        type: "Reversal",
+        source: "Invoice Cancel",
+        invoiceNo: inv.invoiceNo,
+        customer: getCustomer(inv),
+        amount: getTotal(inv),
+        debit: 0,
+        credit: getTotal(inv),
+        date: new Date().toISOString()
+      });
+
+      loadInvoices();
+    };
+
+    /* PAYMENTS */
+    tr.querySelector(".pay-btn").onclick = () => openPayment(inv);
+
+    table.appendChild(tr);
+  });
+}
+
+/* =========================
+   PAYMENT MODAL (FIXED CLICK)
+========================= */
+function openPayment(inv) {
+
+  selectedInvoice = inv;
+
+  const modal = document.getElementById("paymentViewModal");
+  const body = document.getElementById("paymentDetailsTable");
+
+  const payments = inv.payments || [];
+  body.innerHTML = "";
+
+  let total = 0;
+
+  payments.forEach(p => {
+    total += Number(p.amount || 0);
+
+    const row = document.createElement("tr");
+
+    row.dataset.receipt = p.receiptNo || "";
+    row.dataset.invoice = inv.invoiceNo || "";
+
+    row.innerHTML = `
+      <td>${p.paymentDate || ""}</td>
+      <td style="color:#007bff;cursor:pointer;font-weight:bold;">
+        ${p.receiptNo || "N/A"}
+      </td>
+      <td>${p.method || ""}</td>
+      <td>${p.reference || ""}</td>
+      <td style="text-align:right;">MWK ${p.amount}</td>
+    `;
+
+    body.appendChild(row);
+  });
+
+  body.innerHTML += `
+    <tr style="font-weight:bold;">
+      <td colspan="4">Total</td>
+      <td style="text-align:right;">MWK ${total}</td>
+    </tr>
+  `;
+
+  /* FIXED RECEIPT CLICK */
+  body.onclick = (e) => {
+    const r = e.target.closest("tr");
+    if (!r) return;
+
+    if (!r.dataset.receipt) return;
+
+    window.location.href =
+      `payment-receipt.html?receiptNo=${r.dataset.receipt}&invoiceNo=${r.dataset.invoice}`;
+  };
+
+  document.getElementById("addPaymentBtn").onclick = () => {
+    window.location.href = `invoice-view.html?invoiceNo=${inv.invoiceNo}`;
+  };
+
+  window.closePaymentView = () => {
+    modal.style.display = "none";
+  };
+
+  modal.style.display = "flex";
+}
+
+/* =========================
+   EXPORT SAFE
+========================= */
+function safeData() {
+  return Array.isArray(lastFilteredData) ? lastFilteredData : [];
+}
+
+/* CSV */
+window.exportCSV = function () {
+  const data = safeData();
+  let csv = ["Invoice,Customer,Amount,Status,Date,Due"];
+
+  data.forEach(inv => {
+    csv.push([
+      inv.invoiceNo,
+      getCustomer(inv),
+      getTotal(inv),
+      inv.status,
+      parseDate(inv.invoiceDate)?.toLocaleDateString(),
+      parseDate(inv.dueDate)?.toLocaleDateString()
+    ].join(","));
+  });
+
+  download(csv.join("\n"), "invoices.csv", "text/csv");
+};
+
+/* EXCEL */
+window.exportExcel = function () {
+  const data = safeData();
+
+  let html = "<table border='1'><tr><th>Invoice</th><th>Customer</th><th>Amount</th><th>Status</th></tr>";
+
+  data.forEach(inv => {
+    html += `<tr>
+      <td>${inv.invoiceNo}</td>
+      <td>${getCustomer(inv)}</td>
+      <td>${getTotal(inv)}</td>
+      <td>${inv.status}</td>
+    </tr>`;
+  });
+
+  html += "</table>";
+
+  download(html, "invoices.xls", "application/vnd.ms-excel");
+};
+
+/* PDF FIX */
+window.exportPDF = function () {
+
+  if (!window.jspdf?.jsPDF) {
+    alert("PDF library not loaded");
+    return;
+  }
+
+  const data = safeData();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.text("Invoices", 10, 10);
+
+  const rows = data.map(i => [
+    i.invoiceNo,
+    getCustomer(i),
+    getTotal(i),
+    i.status
+  ]);
+
+  doc.autoTable({
+    head: [["Invoice", "Customer", "Amount", "Status"]],
+    body: rows,
+    startY: 20
+  });
+
+  doc.save("invoices.pdf");
+};
+
+/* DOWNLOAD */
+function download(content, name, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+}
+
+/* LOAD */
+async function loadInvoices() {
+  const snap = await getDocs(collection(db, "invoices"));
+  allInvoices = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  applyFilters();
+}
+
+/* ✅ ADDED: MOBILE TOGGLE */
+window.toggleSidebar = function () {
+  const sidebar = document.querySelector(".sidebar");
+  const btn = document.getElementById("menuBtn");
+
+  sidebar.classList.toggle("show");
+
+  btn.textContent = sidebar.classList.contains("show") ? "✖" : "☰";
+};
+
+/* auto close on click */
+document.querySelectorAll(".sidebar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.remove("show");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
+
+
+loadInvoices();
+
+/* NAV */
+window.go = p => location.href = p;
+window.openInvoiceForm = () => location.href = "invoice.html";
+
+</script>
+</body>
+</html>

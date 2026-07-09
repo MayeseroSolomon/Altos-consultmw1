@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Form</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      padding-top: 40px;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      width: 350px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .note {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 10px;
+      color: gray;
+    }
+
+    .error {
+      border: 2px solid red !important;
+      background: #ffe6e6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Add Customer</h2>
+
+    <input type="text" id="name" placeholder="Customer Name">
+    <input type="text" id="phone" placeholder="Phone Number">
+    <input type="email" id="email" placeholder="Email Address">
+
+    <button onclick="addCustomer()">Save Customer</button>
+
+    <div class="note">
+      Customer data will be saved to Firebase
+    </div>
+  </div>
+
+  <!-- FORM VALIDATION -->
+  <script>
+    function addCustomer() {
+      const nameInput = document.getElementById("name");
+      const phoneInput = document.getElementById("phone");
+      const emailInput = document.getElementById("email");
+
+      const name = nameInput.value.trim();
+      const phone = phoneInput.value.trim();
+      const email = emailInput.value.trim();
+
+      // reset errors
+      nameInput.classList.remove("error");
+      phoneInput.classList.remove("error");
+      emailInput.classList.remove("error");
+
+      if (!name) {
+        alert("Name is required");
+        nameInput.classList.add("error");
+        nameInput.focus();
+        return;
+      }
+
+      if (!phone) {
+        alert("Phone is required");
+        phoneInput.classList.add("error");
+        phoneInput.focus();
+        return;
+      }
+
+      if (!email) {
+        alert("Email is required");
+        emailInput.classList.add("error");
+        emailInput.focus();
+        return;
+      }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        alert("Enter a valid email address");
+        emailInput.classList.add("error");
+        emailInput.focus();
+        return;
+      }
+
+      addCustomerToFirebase(name, phone, email);
+    }
+  </script>
+
+  <!-- FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+const firebaseConfig = {
+      apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+      authDomain: "makwacha-accounting-app.firebaseapp.com",
+      projectId: "makwacha-accounting-app",
+      storageBucket: "makwacha-accounting-app.firebasestorage.app",
+      messagingSenderId: "463625191206",
+      appId: "1:463625191206:web:58fe07598446aa098a0be7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function addCustomerToFirebase(name, phone, email) {
+  try {
+
+    /* CUSTOMER CODE GENERATOR */
+    const prefix =
+      "CU" +
+      name.replace(/[^A-Za-z]/g, "")
+          .toUpperCase()
+          .substring(0, 3)
+          .padEnd(3, "X");
+
+    const snap = await getDocs(collection(db, "customers"));
+
+    let count = 0;
+
+    snap.forEach(doc => {
+      const data = doc.data();
+
+      if (
+        data.customerCode &&
+        data.customerCode.startsWith(prefix)
+      ) {
+        count++;
+      }
+    });
+
+    const sequence = String(count + 1).padStart(3, "0");
+
+    const customerCode = prefix + sequence;
+
+    await addDoc(collection(db, "customers"), {
+      customerCode,
+      name,
+      phone,
+      email,
+      createdAt: new Date()
+    });
+
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("email").value = "";
+
+    document.getElementById("name").classList.remove("error");
+    document.getElementById("phone").classList.remove("error");
+    document.getElementById("email").classList.remove("error");
+
+    document.getElementById("name").focus();
+
+    alert("Customer saved successfully!\nCode: " + customerCode);
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save customer");
+  }
+}
+    window.addCustomerToFirebase = addCustomerToFirebase;
+  </script>
+
+</body>
+</html>

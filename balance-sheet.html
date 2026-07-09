@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Makwacha - Balance Sheet</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
+
+/* LAYOUT */
+body{
+  display:flex;
+  height:100vh;
+  background:#f4f6f9;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#1e2a38;
+  color:white;
+  padding:20px;
+}
+
+.sidebar h2{
+  margin-bottom:20px;
+  font-size:18px;
+}
+
+.sidebar button{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  background:transparent;
+  border:1px solid #34495e;
+  color:white;
+  cursor:pointer;
+  text-align:left;
+  border-radius:5px;
+}
+
+.sidebar button:hover{
+  background:#34495e;
+}
+
+.active{
+  background:#007bff !important;
+}
+
+.logo-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f4f6f9;
+  border-radius:15px;
+}
+
+.logo-wrapper img{
+  width:clamp(50px,15vw,100px);
+  min-width:80px;
+  max-width:150px;
+  height:auto;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:25px;
+  overflow:auto;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.header h2{
+  color:#2c3e50;
+}
+
+.print-btn{
+  background:#001F54;
+  color:white;
+  border:none;
+  padding:10px 15px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.report-date{
+  margin-bottom:20px;
+  color:#666;
+  font-size:14px;
+}
+
+.section{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  margin-bottom:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.section h3{
+  margin-bottom:15px;
+  color:#001F54;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  background:#001F54;
+  color:white;
+  padding:10px;
+  text-align:left;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+}
+
+tfoot th{
+  background:#e9ecef;
+  color:black;
+}
+
+.amount{
+  text-align:right;
+}
+
+.summary{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.summary-row{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  font-weight:bold;
+}
+
+.diff-good{
+  color:green;
+}
+
+.diff-bad{
+  color:red;
+}
+
+/* PRINT */
+@media print{
+
+  .sidebar,
+  .print-btn{
+    display:none !important;
+  }
+
+  .main{
+    width:100%;
+    padding:0;
+  }
+
+  th{
+    background:#001F54 !important;
+    color:white !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  body{
+    background:white;
+  }
+
+  .section,
+  .summary{
+    box-shadow:none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+<div class="logo-wrapper">
+<img src="pictures/silver strikers logo.png" alt="company-logo">
+</div>
+
+<br>
+
+<h2>Accounting</h2>
+
+<button onclick="go('dashboard.html')">Dashboard</button>
+<button onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+<button onclick="go('invoice-list.html')">Invoices</button>
+<button onclick="go('customers.html')">Customers</button>
+<button onclick="go('journallist.html')">Journals</button>
+<button class="active" onclick="go('reports.html')">Reports</button>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header">
+<h2>Balance Sheet</h2>
+
+<button class="print-btn" onclick="window.print()">
+🖨 Print
+</button>
+</div>
+
+<div class="report-date">
+As At: <span id="reportDate"></span>
+</div>
+
+<!-- ASSETS -->
+<div class="section">
+
+<h3>Assets</h3>
+
+<table>
+<thead>
+<tr>
+<th>Account</th>
+<th>Balance</th>
+</tr>
+</thead>
+
+<tbody id="assetBody"></tbody>
+
+<tfoot>
+<tr>
+<th>Total Assets</th>
+<th id="totalAssets">0.00</th>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+
+<!-- LIABILITIES -->
+<div class="section">
+
+<h3>Liabilities</h3>
+
+<table>
+<thead>
+<tr>
+<th>Account</th>
+<th>Balance</th>
+</tr>
+</thead>
+
+<tbody id="liabilityBody"></tbody>
+
+<tfoot>
+<tr>
+<th>Total Liabilities</th>
+<th id="totalLiabilities">0.00</th>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+
+<!-- EQUITY -->
+<div class="section">
+
+<h3>Equity</h3>
+
+<table>
+<thead>
+<tr>
+<th>Account</th>
+<th>Balance</th>
+</tr>
+</thead>
+
+<tbody id="equityBody"></tbody>
+
+<tfoot>
+<tr>
+<th>Total Equity</th>
+<th id="totalEquity">0.00</th>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+
+<!-- SUMMARY -->
+<div class="summary">
+
+<div class="summary-row">
+<span>Total Assets</span>
+<span id="assetsTotal">0.00</span>
+</div>
+
+<div class="summary-row">
+<span>Total Liabilities + Equity</span>
+<span id="leTotal">0.00</span>
+</div>
+
+<hr>
+
+<div class="summary-row">
+<span>Difference</span>
+<span id="difference">0.00</span>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+import { protectPage } from "./permissions.js";
+
+protectPage("ledger");
+
+const app = initializeApp({
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+});
+
+const db = getFirestore(app);
+
+window.go = (page) => {
+  window.location.href = page;
+};
+
+document.getElementById("reportDate").innerText =
+  new Date().toLocaleDateString();
+
+/* =========================
+   LOAD BALANCE SHEET (REAL CALCULATION)
+========================= */
+async function loadBalanceSheet() {
+
+  const coaSnap = await getDocs(collection(db, "chartOfAccounts"));
+  const journalSnap = await getDocs(collection(db, "journals"));
+
+  const accounts = [];
+
+  coaSnap.forEach(d => {
+    accounts.push({ id: d.id, ...d.data() });
+  });
+
+  /* =========================
+     CALCULATE BALANCES FROM JOURNALS
+  ========================= */
+  const balances = {};
+
+  // init all accounts
+  accounts.forEach(a => {
+    balances[a.code] = 0;
+  });
+
+  journalSnap.forEach(doc => {
+    const j = doc.data();
+
+    (j.lines || []).forEach(l => {
+
+      const code = l.accountCode || l.account || l.accountName;
+
+      if (!code) return;
+
+      const debit = Number(l.debit || 0);
+      const credit = Number(l.credit || 0);
+
+      if (!balances[code]) balances[code] = 0;
+
+      balances[code] += (debit - credit);
+    });
+  });
+
+  /* =========================
+     GROUPING
+  ========================= */
+  let assets = 0;
+  let liabilities = 0;
+  let equity = 0;
+
+  const assetBody = document.getElementById("assetBody");
+  const liabilityBody = document.getElementById("liabilityBody");
+  const equityBody = document.getElementById("equityBody");
+
+  assetBody.innerHTML = "";
+  liabilityBody.innerHTML = "";
+  equityBody.innerHTML = "";
+
+  accounts.forEach(a => {
+
+    const bal = balances[a.code] || 0;
+
+    const row = `
+      <tr>
+        <td>${a.code} - ${a.name}</td>
+        <td class="amount">${bal.toLocaleString()}</td>
+      </tr>
+    `;
+
+    if (a.type === "Asset") {
+      assets += bal;
+      assetBody.innerHTML += row;
+    }
+
+    if (a.type === "Liability") {
+      liabilities += bal;
+      liabilityBody.innerHTML += row;
+    }
+
+    if (a.type === "Equity") {
+      equity += bal;
+      equityBody.innerHTML += row;
+    }
+  });
+
+  /* =========================
+     TOTALS
+  ========================= */
+  document.getElementById("totalAssets").innerText =
+    assets.toLocaleString();
+
+  document.getElementById("totalLiabilities").innerText =
+    liabilities.toLocaleString();
+
+  document.getElementById("totalEquity").innerText =
+    equity.toLocaleString();
+
+  const totalLE = liabilities + equity;
+
+  document.getElementById("assetsTotal").innerText =
+    assets.toLocaleString();
+
+  document.getElementById("leTotal").innerText =
+    totalLE.toLocaleString();
+
+  const diff = assets - totalLE;
+
+  const diffEl = document.getElementById("difference");
+  diffEl.innerText = diff.toLocaleString();
+
+  diffEl.className = diff === 0 ? "diff-good" : "diff-bad";
+}
+
+loadBalanceSheet();
+
+</script>
+
+</body>
+</html>

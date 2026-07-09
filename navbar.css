@@ -1,0 +1,109 @@
+/* ==========================================================================
+   2. NAVBAR STYLES (DESKTOP DEFAULT)
+   ========================================================================== */
+.navbar {
+    background-color: #0b1f3a;
+    padding: 15px 8%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+}
+
+.company-name {
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.company-name span {
+    color: white;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 10px;
+}
+
+.nav-links li {
+    position: relative;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    transition: 0.3s;
+    border-radius: 25px;
+    display: inline-block;
+    padding: 8px 15px;
+}
+
+.nav-links li a:hover {
+    color: #ffd700;
+    background: white;
+}
+
+.nav-links li a.active {
+    background: #ffd700;
+    color: black;
+    border-radius: 15px;
+    padding: 8px 14px;
+}
+
+/* Hamburger button settings */
+.menu-toggle {
+    display: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+}
+
+/* ==========================================================================
+   3. DROPDOWN SUBMENU STYLES
+   ========================================================================== */
+.dropdown {
+    position: absolute;
+    display: none;
+    top: 100%;
+    left: 0;
+    background-color: #444;
+    min-width: 160px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+}
+
+.dropdown-menu a {
+    color: white;
+    padding: 12px 16px;
+    font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+    background-color: #555;
+}
+
+.dropdown-menu:hover .dropdown {
+    display: block;
+}

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Journal List</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial;
+}
+
+/* LAYOUT */
+body {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #1e2a38;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  background: transparent;
+  border: 1px solid #34495e;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 5px;
+}
+
+.sidebar button:hover {
+  background: #34495e;
+}
+
+.active {
+  background: #007bff !important;
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+/* FILTER BAR */
+.filters {
+  margin-bottom: 15px;
+}
+
+.filters button {
+  padding: 8px 12px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #e0e0e0;
+}
+
+.filters button.active-filter {
+  background: #007bff;
+  color: white;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+th {
+  background: #f1f3f6;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.Paid { background: #d4edda; color: #155724; }
+.Unpaid { background: #f8d7da; color: #721c24; }
+.Draft { background: #fff3cd; color: #856404; }
+.Posted { background: #d1ecf1; color: #0c5460; }
+
+tr:hover {
+  background: #f9f9f9;
+  cursor: pointer;
+}
+
+.action-btn {
+  padding: 5px 8px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.edit-btn {
+  background: #ffc107;
+}
+
+.print-btn {
+  background: #17a2b8;
+  color: white;
+}
+/* =========================
+   HAMBURGER (ADDED)
+========================= */
+.menuBtn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2000;
+  font-size: 24px;
+  background: #2d89ef;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+/* =========================
+   MOBILE NAV (ADDED)
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    height: 100%;
+    transition: 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .menuBtn {
+    display: block;
+  }
+}
+</style>
+</head>
+
+<body>
+  <!-- ✅ ADDED HAMBURGER BUTTON -->
+<button class="menuBtn" onclick="toggleSidebar()" id="menuBtn">☰</button>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+  <h2>Accounting</h2>
+
+  <button onclick="go('dashboard.html')">Dashboard</button>
+  <button onclick="go('chart-of-accounts.html')">Chart of Accounts</button>
+  <button onclick="go('invoice-list.html')">Invoices</button>
+  <button onclick="go('customers.html')">Customers</button>
+  <button class="active" onclick="go('journal-list.html')">Journals</button>
+  <button onclick="go('journal-ledger.html')">Ledger</button>
+  <button onclick="go('reports.html')">Reports</button>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header" style="display:flex;justify-content:space-between;align-items:center;">
+  <h2>Journal Entries</h2>
+
+  <button onclick="go('journalentry.html')"
+    style="background:#198754;color:white;border:none;padding:10px 15px;border-radius:6px;cursor:pointer;font-weight:bold;">
+    + Add Journal
+  </button>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <button class="active-filter" onclick="filterJournal('All')">All</button>
+  <button onclick="filterJournal('Posted')">Posted</button>
+  <button onclick="filterJournal('Draft')">Draft</button>
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+
+  <input type="text" id="searchJournalNo" placeholder="Search Journal No"
+  style="padding:8px;border:1px solid #ccc;border-radius:5px;">
+
+  <input type="date" id="fromDate">
+  <input type="date" id="toDate">
+
+  <select id="sortBy" style="padding:8px;">
+    <option value="dateDesc">Date (Newest)</option>
+    <option value="dateAsc">Date (Oldest)</option>
+    <option value="amountDesc">Amount (High → Low)</option>
+    <option value="amountAsc">Amount (Low → High)</option>
+    <option value="journalNoAsc">Journal No ↑</option>
+    <option value="journalNoDesc">Journal No ↓</option>
+  </select>
+
+  <button onclick="applyFilters()"
+  style="padding:8px 12px;background:#198754;color:white;border:none;border-radius:5px;">
+    Apply
+  </button>
+
+  <button onclick="resetFilters()"
+  style="padding:8px 12px;background:#6c757d;color:white;border:none;border-radius:5px;">
+    Reset
+  </button>
+
+</div>
+
+<!-- TABLE -->
+<table>
+  <thead>
+    <tr>
+      <th>Journal No</th>
+      <th>Date</th>
+      <th>Posting Date</th>
+      <th>Reference</th>
+      <th>Total Debit</th>
+      <th>Total Credit</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody id="journalBody"></tbody>
+</table>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCSH1HUsE50pWUjmNc2coe5e8z7njt_NsQ",
+  authDomain: "makwacha-accounting-app.firebaseapp.com",
+  projectId: "makwacha-accounting-app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* =========================
+   STATE
+========================= */
+let journals = [];
+let filteredJournals = [];
+let currentFilter = "All";
+
+/* =========================
+   LOAD DATA
+========================= */
+async function loadJournals() {
+
+  const snap = await getDocs(collection(db, "journals"));
+
+  journals = [];
+
+  snap.forEach(docSnap => {
+    journals.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  filteredJournals = [...journals];
+  renderTable();
+}
+
+/* =========================
+   RENDER TABLE
+========================= */
+function renderTable() {
+
+  const body = document.getElementById("journalBody");
+  body.innerHTML = "";
+
+  filteredJournals.forEach(j => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${j.journalNo || ""}</td>
+      <td>${j.date || ""}</td>
+      <td>${j.postingDate || j.date || ""}</td>
+      <td>${j.reference || ""}</td>
+      <td>${Number(j.totalDebit || 0).toLocaleString()}</td>
+      <td>${Number(j.totalCredit || 0).toLocaleString()}</td>
+      <td>
+        <span class="status ${j.status || "Draft"}">
+          ${j.status || "Draft"}
+        </span>
+      </td>
+
+      <td>
+        <button class="action-btn edit-btn"
+          onclick="editJournal('${j.id}')">Edit</button>
+
+        <button class="action-btn print-btn"
+          onclick="printJournal('${j.id}')">Print</button>
+      </td>
+    `;
+
+    tr.addEventListener("dblclick", () => {
+      window.location.href = `journalview.html?id=${j.id}`;
+    });
+
+    body.appendChild(tr);
+  });
+}
+
+/* =========================
+   FILTER ENGINE (AUTO)
+========================= */
+function applyAllFilters() {
+
+  const search = document.getElementById("searchJournalNo").value.toLowerCase();
+  const fromDate = document.getElementById("fromDate").value;
+  const toDate = document.getElementById("toDate").value;
+  const sortBy = document.getElementById("sortBy").value;
+
+  filteredJournals = journals.filter(j => {
+
+    const matchSearch =
+      !search || (j.journalNo || "").toLowerCase().includes(search);
+
+    const date = j.date || "";
+
+    const matchFrom = !fromDate || date >= fromDate;
+    const matchTo = !toDate || date <= toDate;
+
+    const matchStatus =
+      currentFilter === "All" || j.status === currentFilter;
+
+    return matchSearch && matchFrom && matchTo && matchStatus;
+  });
+
+  sortData(sortBy);
+  renderTable();
+}
+
+/* =========================
+   SORTING
+========================= */
+function sortData(type) {
+
+  switch(type) {
+
+    case "dateDesc":
+      filteredJournals.sort((a,b) =>
+        new Date(b.date || 0) - new Date(a.date || 0)
+      );
+      break;
+
+    case "dateAsc":
+      filteredJournals.sort((a,b) =>
+        new Date(a.date || 0) - new Date(b.date || 0)
+      );
+      break;
+
+    case "amountDesc":
+      filteredJournals.sort((a,b) =>
+        ((b.totalDebit||0)+(b.totalCredit||0)) -
+        ((a.totalDebit||0)+(a.totalCredit||0))
+      );
+      break;
+
+    case "amountAsc":
+      filteredJournals.sort((a,b) =>
+        ((a.totalDebit||0)+(a.totalCredit||0)) -
+        ((b.totalDebit||0)+(b.totalCredit||0))
+      );
+      break;
+
+    case "journalNoAsc":
+      filteredJournals.sort((a,b) =>
+        (a.journalNo||"").localeCompare(b.journalNo||"")
+      );
+      break;
+
+    case "journalNoDesc":
+      filteredJournals.sort((a,b) =>
+        (b.journalNo||"").localeCompare(a.journalNo||"")
+      );
+      break;
+  }
+}
+
+/* =========================
+   LIVE FILTER EVENTS
+========================= */
+document.getElementById("searchJournalNo").addEventListener("input", applyAllFilters);
+document.getElementById("fromDate").addEventListener("change", applyAllFilters);
+document.getElementById("toDate").addEventListener("change", applyAllFilters);
+document.getElementById("sortBy").addEventListener("change", applyAllFilters);
+
+/* =========================
+   STATUS FILTER
+========================= */
+window.filterJournal = function(type, event) {
+
+  currentFilter = type;
+
+  document.querySelectorAll(".filters button")
+    .forEach(b => b.classList.remove("active-filter"));
+
+  if (event) event.target.classList.add("active-filter");
+
+  applyAllFilters();
+};
+
+/* =========================
+   RESET FILTERS
+========================= */
+window.resetFilters = function () {
+
+  document.getElementById("searchJournalNo").value = "";
+  document.getElementById("fromDate").value = "";
+  document.getElementById("toDate").value = "";
+  document.getElementById("sortBy").value = "dateDesc";
+
+  currentFilter = "All";
+
+  filteredJournals = [...journals];
+  renderTable();
+};
+
+/* =========================
+   NAV
+========================= */
+window.go = function(page) {
+  window.location.href = page;
+};
+
+/* =========================
+   ACTIONS
+========================= */
+window.editJournal = function(id) {
+  window.location.href = "journalentry.html?id=" + id;
+};
+
+/* 🔥 FIXED PRINT */
+window.printJournal = function(id) {
+  const url = `journalview.html?id=${id}&print=1`;
+  window.open(url, "_blank");
+};
+
+/* ✅ ADDED: MOBILE TOGGLE */
+window.toggleSidebar = function () {
+  const sidebar = document.querySelector(".sidebar");
+  const btn = document.getElementById("menuBtn");
+
+  sidebar.classList.toggle("show");
+
+  btn.textContent = sidebar.classList.contains("show") ? "✖" : "☰";
+};
+
+/* auto close on click */
+document.querySelectorAll(".sidebar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(".sidebar").classList.remove("show");
+    document.getElementById("menuBtn").textContent = "☰";
+  });
+});
+
+
+/* =========================
+   INIT
+========================= */
+loadJournals();
+
+</script>
+</body>
+</html>

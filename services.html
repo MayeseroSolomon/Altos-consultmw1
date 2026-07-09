@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALTOS CONSULT: ABOUT</title>
+    <link rel="stylesheet" href="services.css">
+    <link rel="icon" href="pictures/reviews-bg.png" type="image/png">
+    <link rel="stylesheet" href="navbar.css">
+    <link rel="stylesheet" href="footer.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo-section">
+        <img src="pictures/reviews-bg.png" alt="Company Logo" class="logo"> 
+        <h2 class="company-name">ALTOS <span>CONSULT</span></h2>
+    </div> 
+    <button class="menu-toggle" id="mobile-menu-btn">☰</button>
+  
+    <!-- FIXED: Added id="nav-links-container" right here -->
+    <ul class="nav-links" id="nav-links-container">
+        <li><a href="index.html">HOME</a></li>
+        <li><a href="about.html">ABOUT</a></li>
+        <li class="dropdown-menu">
+            <a href="services.html" class="dropbtn">SERVICES</a>
+            <ul class="dropdown">
+                <li><a href="bookkeeping.html">Bookkeeping and Financial Reporting</a></li>
+                <li><a href="tax.html">Tax Compliance</a></li>
+                <li><a href="auditandassurance.html">Audit and Assurance</a></li>
+                <li><a href="businessconsult.html">Business Consulting</a></li>
+            </ul>
+        </li>
+        <li><a href="contact.html">CONTACT</a></li>
+        <li><a href="Blog.html">BLOG</a></li>
+    </ul>
+</nav>
+<main class="content-wrapper">
+  <img src="pictures/Artboard 1.jpg">
+<section class="services">
+
+    <div class="services-title">
+        <h2>Our Services</h2>
+        <p>Professional accounting and financial solutions tailored for your business.</p>
+    </div>
+
+    <div class="services-container">
+
+        <div class="service-box">
+           <div class="service-imagewrapper"><img src="pictures/hq720.jpg" alt="Tax Services" class="service-icon">
+            </div> 
+            <h3>Tax Services</h3>
+            <hr style="width: 80px; margin: auto; border: 1px solid #ffd03a; text-align: left;">
+            <p>
+                We provide accurate tax preparation, filing, and compliance services 
+                to help businesses meet all tax obligations.
+            </p>
+            <a href="tax.html" class="read-more">Read More</a>
+        </div>
+
+        <div class="service-box">
+             <div class="service-imagewrapper"><img src="pictures/images (27).jpeg" alt="Payroll Management" class="service-icon">
+            </div>
+            <h3>Payroll Management</h3>
+            <hr style="width: 80px; margin: auto; border: 1px solid #ffd03a; text-align: left;">
+            <p>
+                Efficient payroll processing solutions ensuring employees are paid 
+                accurately and on time.
+            </p>
+            <a href="payroll.html" class="read-more">Read More</a>
+        </div>
+
+        <div class="service-box">
+            <h3>Bookkeeping</h3>
+            <hr style="width: 80px; margin: auto; border: 1px solid #ffd03a; text-align: left;">
+            <p>
+                Organized financial record management to help track business 
+                performance and growth.
+            </p>
+            <a href="bookkeeping.html" class="read-more">Read More</a>
+        </div>
+
+        <div class="service-box">
+            <h3>Audit & Assurance</h3>
+            <hr style="width: 80px; margin: auto; border: 1px solid #ffd03a; text-align: left;">
+            <p>
+                Independent audit services that improve transparency, trust, 
+                and financial accuracy.
+            </p>
+            <a href="auditandassurance.html" class="read-more">Read More</a>
+        </div>
+
+        <div class="service-box">
+            <h3>Financial Consulting</h3>
+            <hr style="width: 80px; margin: auto; border: 1px solid #ffd03a; text-align: left;">
+            <p>
+                Expert financial advice and planning solutions to help businesses 
+                make informed decisions.
+            </p>
+            <a href="financialconsulting.html" class="read-more">Read More</a>
+        </div>
+
+        <div class="service-box">
+            <h3>VAT Compliance</h3>
+            <hr style="width: 80px; margin: auto; border: 1px solid #ffd03a; text-align: left;">
+            <p>
+                Assistance with VAT registration, filing, and compliance to ensure 
+                smooth business operations.
+            </p>
+            <a href="vatcompliance.html" class="read-more">Read More</a>
+        </div>
+
+    </div>
+
+</section>
+
+
+
+</main>
+<footer class="footer">
+    <section class="footercontent-section">
+   <div class="quicklinks">
+    <h3>Quick Links</h3>
+   <a href="index.html"> Home </a><br><br> 
+   <a href="about.html"> About </a> <br> <br>
+   <a href="Blog.html"> Blog </a> <br> <br>
+   <a href="contact.html"> Contact </a><br><br>
+   <a href="Blog.html">Blog</a>
+   </div>
+    <div class="contacts">
+       <h3>Contact Us</h3>
+        <p><a href="mailto:solomongreymayesero@gmail.com">Email: info@altosconsult.com<br></a>
+        Phone: +265880314701</p>
+    </div>
+    <div class="social-media">
+       <h3> follow us</h3><br>
+        <a href="https://web.facebook.com/profile.php?id=61551922085267"><img src="pictures/facebook (1).png" alt="Facebook" class="social-icon"></a><br>
+        <a href="#"><img src="pictures/reviews-bg.png" alt="Twitter" class="social-icon"></a><br>
+    </div></section><br>
+    <p class="rights">&copy; 2026 Altos Consult. All rights reserved.</p>
+</footer>
+
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const menuBtn = document.getElementById("mobile-menu-btn");
+    const navMenu = document.getElementById("nav-links-container");
+
+    menuBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+
+        navMenu.classList.toggle("mobile-open");
+
+        // ✅ CHANGE ICON HERE
+        if (navMenu.classList.contains("mobile-open")) {
+            menuBtn.textContent = "✕";
+        } else {
+            menuBtn.textContent = "☰";
+        }
+    });
+
+    // close when clicking outside
+    document.addEventListener("click", function (e) {
+        if (!navMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+            navMenu.classList.remove("mobile-open");
+            menuBtn.textContent = "☰"; // reset icon
+        }
+    });
+
+    // close when clicking a link
+    navMenu.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", () => {
+            navMenu.classList.remove("mobile-open");
+            menuBtn.textContent = "☰"; // reset icon
+        });
+    });
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const boxes = document.querySelectorAll(".service-box");
+
+    const observer = new IntersectionObserver((entries, observer) => {
+
+        entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+
+                boxes.forEach((box, index) => {
+
+                    setTimeout(() => {
+                        box.classList.add("show");
+                    }, index * 200);
+
+                });
+
+                observer.unobserve(entry.target);
+
+            }
+
+        });
+
+    }, {
+        threshold: 0.2
+    });
+
+    observer.observe(document.querySelector(".services"));
+
+});
+</script>
+
+</body>
+</html>

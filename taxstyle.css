@@ -1,0 +1,299 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+
+}
+body{
+    background: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.navbar{
+    background-color: #0b1f3a;
+    padding: 15px 8%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+}
+.logo-section{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.logo{
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+}
+.company-name{
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffd700;
+}
+.company-name span{
+    color: white;
+}
+.nav-links{
+    list-style: none;
+    display: flex;
+    gap: 10px;
+}
+.nav-links li{
+    position: relative;
+}
+.nav-links li a{
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    transition: 0.3s;
+    border-radius: 25px;
+    display: inline-block;
+    padding: 8px 15px;
+}
+.nav-links li a:hover{
+    background-color: #ffd700;
+    color: white;
+}
+.nav-links li a.active{
+    background-color: #ffd700;
+    color: white;
+    border-radius: 15px;
+    padding: 8px 14px;
+}
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    border: none;
+    color: white;
+    font-size: 28px;
+    background: none;
+}
+.dropdown {
+  position: absolute;
+  display: none;
+  top: 100%;
+  left: 0;
+  background-color: #444;
+  min-width: 160px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+}
+.dropdown-menu a {
+  color: white;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+.dropdown-menu a:hover {
+  background-color: #555;
+}
+.dropdown-menu:hover .dropdown {
+  display: block;
+}
+.content-wrapper{
+    margin-top: 85px; /* Pushes content down below fixed navbar */
+    padding: 20px 20px 80px 20px; /* Added extra bottom padding so footer doesn't block text */
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    overflow-y: auto; /* Enables smooth text section scrolling */
+}
+.slider-container {
+  position: relative;
+  width: 100%;
+  height: 400px;    
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  opacity: 0;
+  transition: opacity 1s ease-in-out; 
+}
+.slide.active {
+  opacity: 1;
+}
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block !important;
+  }
+  
+  .navbar .nav-links {
+    display: none !important; 
+    flex-direction: column;
+    position: absolute;
+    top: 85px; 
+    left: 0; 
+    width: 100%;
+    background-color: #0b1f3a;
+    padding: 20px 0;
+    gap: 15px;
+  }
+  
+  .navbar .nav-links li {
+    width: 100%;
+    text-align: center;
+  }
+
+  .navbar .nav-links li a {
+    display: block;
+    width: 80%;
+    margin: 0 auto;
+  }
+  
+  .navbar .nav-links.mobile-open {
+    display: flex !important;
+  }
+}
+/* ==========================================================================
+   5. FOOTER STYLES (NATURAL FLOW)
+   ========================================================================== */
+footer {
+    background-color: #0b1f3a;
+    padding: 40px 8% 20px 8%;
+    width: 100%;
+    z-index: 9999;
+    margin-top: auto; /* Ensures footer stays at bottom if content is short */
+}
+
+.footercontent-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 50px;
+    flex-wrap: wrap; /* Prevents breaking on smaller screens */
+}
+
+.footer .quicklinks h3 {
+    color: #ffd700;
+    margin-bottom: 20px;
+}
+
+.footerquicklinks {
+    display: flex;
+    gap: 50px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.quicklinks a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s ease;
+    padding: 15px 20px;
+}
+
+.quicklinks a:hover {
+    color: #ffd700;
+}
+
+.contacts {
+    text-align: left;
+    color: white;
+}
+
+.contacts p {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 5px 0;
+}
+
+.contacts h3 {
+    color: #ffd700;
+    margin-bottom: 20px;
+}
+
+.rights {
+    text-align: center;
+    color: #ffd700;
+    margin-top: 30px;
+    font-size: 14px;
+}
+
+.social-media {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.social-media h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+}
+
+.social-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+    transform: scale(1.1);
+}
+/* ==========================================================================
+   6. MOBILE RESPONSIVE MEDIA QUERY (MUST STAY AT THE BOTTOM)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block !important;
+    }
+    
+    .navbar .nav-links {
+        display: none !important; 
+        flex-direction: column;
+        position: absolute;
+        top: 85px; 
+        left: 0; 
+        width: 100%;
+        background-color: #0b1f3a;
+        padding: 20px 0;
+        gap: 15px;
+    }
+    
+    .navbar .nav-links li {
+        width: 100%;
+        text-align: center;
+    }
+
+    .navbar .nav-links li a {
+        display: block;
+        width: 80%;
+        margin: 0 auto;
+    }
+    
+    .navbar .nav-links.mobile-open {
+        display: flex !important;
+    }
+
+    .footercontent-section {
+        flex-direction: column;
+        gap: 30px;
+        text-align: center;
+    }
+
+    .contacts {
+        text-align: center;
+    }
+}
+
+
